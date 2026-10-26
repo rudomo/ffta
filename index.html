@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light-slate">
 
 <head>
     <meta charset="UTF-8">
@@ -11,12 +11,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ocean: {
+                            900: '#0a192f',
+                            800: '#112240',
+                            700: '#1d3557',
+                            600: '#457b9d',
+                            accent: '#64ffda',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
 
-        /* Custom smooth transition effects */
         .card-hover-effect {
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -24,182 +41,218 @@
         .card-hover-effect:hover {
             transform: translateY(-8px);
         }
+
+        /* Theme definitions (6 total options: 3 bright, 3 dark) */
+        body.theme-light-slate {
+            background: linear-gradient(to bottom right, #f8fafc, #f1f5f9, #e2e8f0);
+            color: #1e293b;
+        }
+        body.theme-light-slate .theme-card {
+            background-color: #ffffff;
+            border-color: #f1f5f9;
+            box-shadow: 0 20px 25px -5px rgba(226, 232, 240, 0.5);
+        }
+        body.theme-light-slate .theme-title { color: #0f172a; }
+        body.theme-light-slate .theme-card-title { color: #334155; }
+        body.theme-light-slate .theme-card-sub { color: #94a3b8; }
+
+        body.theme-light-warm {
+            background: linear-gradient(to bottom right, #fffbeb, #fef3c7, #fde68a);
+            color: #451a03;
+        }
+        body.theme-light-warm .theme-card {
+            background-color: #fffdf9;
+            border-color: #fef3c7;
+            box-shadow: 0 20px 25px -5px rgba(253, 230, 138, 0.4);
+        }
+        body.theme-light-warm .theme-title { color: #451a03; }
+        body.theme-light-warm .theme-card-title { color: #78350f; }
+        body.theme-light-warm .theme-card-sub { color: #d97706; }
+
+        body.theme-light-forest {
+            background: linear-gradient(to bottom right, #f0fdf4, #dcfce7, #bbf7d0);
+            color: #14532d;
+        }
+        body.theme-light-forest .theme-card {
+            background-color: #ffffff;
+            border-color: #dcfce7;
+            box-shadow: 0 20px 25px -5px rgba(187, 247, 208, 0.5);
+        }
+        body.theme-light-forest .theme-title { color: #14532d; }
+        body.theme-light-forest .theme-card-title { color: #166534; }
+        body.theme-light-forest .theme-card-sub { color: #22c55e; }
+
+        body.theme-dark-midnight {
+            background: linear-gradient(to bottom right, #09090b, #18181b, #27272a);
+            color: #f4f4f5;
+        }
+        body.theme-dark-midnight .theme-card {
+            background-color: #18181b;
+            border-color: #27272a;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+        }
+        body.theme-dark-midnight .theme-title { color: #fafafa; }
+        body.theme-dark-midnight .theme-card-title { color: #f4f4f5; }
+        body.theme-dark-midnight .theme-card-sub { color: #a1a1aa; }
+
+        body.theme-dark-ocean {
+            background: linear-gradient(to bottom right, #0a192f, #112240, #1d3557);
+            color: #e2e8f0;
+        }
+        body.theme-dark-ocean .theme-card {
+            background-color: #112240;
+            border-color: #1d3557;
+            box-shadow: 0 20px 25px -5px rgba(10, 25, 47, 0.8);
+        }
+        body.theme-dark-ocean .theme-title { color: #64ffda; }
+        body.theme-dark-ocean .theme-card-title { color: #ccd6f6; }
+        body.theme-dark-ocean .theme-card-sub { color: #8892b0; }
+
+        body.theme-dark-emerald {
+            background: linear-gradient(to bottom right, #022c22, #064e3b, #065f46);
+            color: #ecfdf5;
+        }
+        body.theme-dark-emerald .theme-card {
+            background-color: #064e3b;
+            border-color: #047857;
+            box-shadow: 0 20px 25px -5px rgba(2, 44, 34, 0.9);
+        }
+        body.theme-dark-emerald .theme-title { color: #34d399; }
+        body.theme-dark-emerald .theme-card-title { color: #a7f3d0; }
+        body.theme-dark-emerald .theme-card-sub { color: #6ee7b7; }
     </style>
 </head>
 
-<body
-    class="bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="theme-light-slate min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white transition-colors duration-300">
 
     <!-- Header Section -->
-    <header class="w-full py-12 px-6 sm:px-12 text-center max-w-5xl mx-auto">
-
-        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+    <header class="w-full py-10 px-6 sm:px-12 max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight theme-title mb-0">
             FFTA Hub
         </h1>
 
+        <!-- Theme Picker Dropdown -->
+        <div class="flex items-center space-x-2 bg-black/10 dark:bg-white/10 backdrop-blur-md p-1.5 rounded-xl border border-white/20 shadow-sm">
+            <span class="text-xs font-semibold px-2 uppercase tracking-wider opacity-85">Theme:</span>
+            <select id="themeSelector" onchange="switchTheme(this.value)" class="bg-transparent text-sm font-medium py-1.5 px-3 rounded-lg focus:outline-none cursor-pointer">
+                <optgroup label="Bright Modes">
+                    <option value="theme-light-slate" class="bg-slate-100 text-slate-800">☀️ Clean Slate (Bright)</option>
+                    <option value="theme-light-warm" class="bg-amber-50 text-amber-900">🌅 Warm Amber (Bright)</option>
+                    <option value="theme-light-forest" class="bg-green-50 text-green-900">🌿 Mint Forest (Bright)</option>
+                </optgroup>
+                <optgroup label="Dark Modes">
+                    <option value="theme-dark-midnight" class="bg-zinc-900 text-zinc-100">🌙 Midnight Dark (Dark)</option>
+                    <option value="theme-dark-ocean" class="bg-[#0a192f] text-cyan-300">🌊 Deep Ocean (Dark)</option>
+                    <option value="theme-dark-emerald" class="bg-[#022c22] text-emerald-300">🌲 Emerald Night (Dark)</option>
+                </optgroup>
+            </select>
+        </div>
     </header>
 
     <!-- Main Grid Container -->
     <main class="w-full max-w-7xl mx-auto px-6 sm:px-12 pb-20 flex-grow">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
 
-            <!-- Card 1-->
-            <a href="#quest.html"
-                class="card-hover-effect bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5 flex items-center justify-between group cursor-pointer">
+            <!-- Card 1: Quest Database -->
+            <a href="quest.html"
+                class="card-hover-effect theme-card rounded-2xl shadow-xl border p-5 flex items-center justify-between group cursor-pointer">
                 <div class="flex items-center space-x-4">
                     <div
                         class="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-sky-600 group-hover:text-white transition-colors duration-300">
                         <i class="fa-solid fa-scroll"></i>
                     </div>
-                    <h2 class="text-md sm:text-xl font-bold text-slate-700 group-hover:text-sky-600 transition-colors">
+                    <h2 class="text-md sm:text-xl font-bold theme-card-title group-hover:text-sky-600 transition-colors">
                         Quest Database
                     </h2>
                 </div>
-                <div
-                    class="text-slate-400 group-hover:text-sky-600 group-hover:translate-x-1 transition-all duration-300">
+                <div class="theme-card-sub group-hover:text-sky-600 group-hover:translate-x-1 transition-all duration-300">
                     <i class="fa-solid fa-arrow-right"></i>
                 </div>
             </a>
 
-            <!-- Card 2: Coastal Paradise -->
-            <a href="#coastal-details"
-                class="card-hover-effect bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5 flex items-center justify-between group cursor-pointer">
+            <!-- Card 2: Job Database -->
+            <a href="job.html"
+                class="card-hover-effect theme-card rounded-2xl shadow-xl border p-5 flex items-center justify-between group cursor-pointer">
                 <div class="flex items-center space-x-4">
-                    <!-- Icon badge -->
                     <div
                         class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
                         <i class="fa-solid fa-hand-fist"></i>
                     </div>
-                    <h2 class="text-md sm:text-xl font-bold text-slate-700 group-hover:text-teal-600 transition-colors">
+                    <h2 class="text-md sm:text-xl font-bold theme-card-title group-hover:text-teal-600 transition-colors">
                         Job Database
                     </h2>
                 </div>
-                <div
-                    class="text-slate-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all duration-300">
+                <div class="theme-card-sub group-hover:text-teal-600 group-hover:translate-x-1 transition-all duration-300">
                     <i class="fa-solid fa-arrow-right"></i>
                 </div>
             </a>
 
-            <!-- Card 3: Urban Architecture -->
-            <a href="#urban-details"
-                class="card-hover-effect bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5 flex items-center justify-between group cursor-pointer">
+            <!-- Card 3: Stat Code -->
+            <a href="code.html"
+                class="card-hover-effect theme-card rounded-2xl shadow-xl border p-5 flex items-center justify-between group cursor-pointer">
                 <div class="flex items-center space-x-4">
-                    <!-- Icon badge -->
                     <div
                         class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
                         <i class="fa-solid fa-wand-sparkles"></i>
                     </div>
-                    <h2
-                        class="text-md sm:text-xl font-bold text-slate-700 group-hover:text-amber-600 transition-colors">
+                    <h2 class="text-md sm:text-xl font-bold theme-card-title group-hover:text-amber-600 transition-colors">
                         Stat Code
                     </h2>
                 </div>
-                <div
-                    class="text-slate-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all duration-300">
+                <div class="theme-card-sub group-hover:text-amber-600 group-hover:translate-x-1 transition-all duration-300">
                     <i class="fa-solid fa-arrow-right"></i>
                 </div>
             </a>
 
-            <!-- Card 4: Deep Forests -->
-            <a href="#forest-details"
-                class="card-hover-effect bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5 flex items-center justify-between group cursor-pointer">
+            <!-- Card 4: Map -->
+            <a href="map.html"
+                class="card-hover-effect theme-card rounded-2xl shadow-xl border p-5 flex items-center justify-between group cursor-pointer">
                 <div class="flex items-center space-x-4">
-                    <!-- Icon badge -->
                     <div
                         class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
                         <i class="fa-solid fa-map"></i>
                     </div>
-                    <h2
-                        class="text-md sm:text-xl font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">
+                    <h2 class="text-md sm:text-xl font-bold theme-card-title group-hover:text-emerald-600 transition-colors">
                         Map
                     </h2>
                 </div>
-                <div
-                    class="text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all duration-300">
+                <div class="theme-card-sub group-hover:text-emerald-600 group-hover:translate-x-1 transition-all duration-300">
                     <i class="fa-solid fa-arrow-right"></i>
                 </div>
             </a>
 
-
-
         </div>
     </main>
 
-    <!-- Footer -->
-    <!-- <footer class="w-full py-6 text-center text-sm text-slate-500 border-t border-slate-200">
-        <p>&copy; 2026 Discovery Hub. Designed with Tailwind CSS & Clean Aesthetics.</p>
-    </footer> -->
-
-    <!-- Interactive Navigation/Detail Modal (Simulates opening another page) -->
-    <!-- <div id="detailModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 transform scale-95 transition-transform duration-300"
-            id="modalContent">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="modalTitle" class="text-2xl font-bold text-slate-900">Destination Title</h3>
-                <button onclick="closeModal()"
-                    class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p id="modalDesc" class="text-slate-600 text-base leading-relaxed mb-6">
-                Detailed information description goes here.
-            </p>
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeModal()"
-                    class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors">
-                    Back to Grid
-                </button>
-                <button onclick="simulatePageOpen()"
-                    class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
-                    Proceed to Full Page
-                </button>
-            </div>
-        </div>
-    </div> -->
-
-    <!-- JavaScript for Interactive Simulation -->
+    <!-- JavaScript for Theme Switching & Persistence -->
     <script>
-        function openModal(title, description) {
-            event.preventDefault(); // Prevent default anchor jumping
-            const modal = document.getElementById('detailModal');
-            const modalContent = document.getElementById('modalContent');
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalDesc').innerText = description;
+        function switchTheme(themeName) {
+            const body = document.body;
+            // Remove any existing theme classes
+            body.className = body.className.replace(/theme-\S+/g, '').trim();
+            // Add new theme
+            body.classList.add(themeName, 'min-h-screen', 'flex', 'flex-col', 'justify-between', 'selection:bg-indigo-500', 'selection:text-white', 'transition-colors', 'duration-300');
+            
+            // Save to localStorage
+            localStorage.setItem('ffta_hub_theme', themeName);
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('detailModal');
-            const modalContent = document.getElementById('modalContent');
-
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }, 200);
-        }
-
-        function simulatePageOpen() {
-            closeModal();
-            // In a real application, this would redirect: window.location.href = "destination.html";
-            console.log("Redirecting to the dedicated destination page successfully!");
-        }
-
-        // Close modal on background click
-        window.onclick = function (event) {
-            const modal = document.getElementById('detailModal');
-            if (event.target == modal) {
-                closeModal();
+            // Handle dark class for tailwind if needed
+            if (themeName.startsWith('theme-dark')) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
         }
+
+        // Initialize theme on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('ffta_hub_theme') || 'theme-light-slate';
+            const selector = document.getElementById('themeSelector');
+            if (selector) {
+                selector.value = savedTheme;
+            }
+            switchTheme(savedTheme);
+        });
     </script>
 </body>
 
