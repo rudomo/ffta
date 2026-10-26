@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FFTA Quest Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --ink: #00171f;
+      --navy: #003459;
+      --sea: #007ea7;
+      --sky: #00a8e8;
+      --white: #ffffff;
+      --line: rgba(0, 126, 167, .35);
+      --mute: rgba(255, 255, 255, .66);
+      --hd: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+      --bd: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      color-scheme: dark
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px);
+      background: var(--ink)
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit
+    }
+
+    body {
+      margin: 0;
+      background: var(--ink);
+      color: var(--white);
+      font: 15px/1.45 var(--bd);
+      -webkit-text-size-adjust: 100%
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+      position: relative;
+    }
+
+    .toggle-bar {
+      position: absolute;
+      top: 28px;
+      right: 20px;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 6px;
+      border: 1px solid var(--sky);
+      background: transparent;
+      color: var(--sky);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px
+    }
+
+    .toggle-bar:hover {
+      background: var(--sky);
+      color: var(--ink)
+    }
+
+    .bar>:first-child {
+      grid-column: 1/-1
+    }
+
+    .bar.hidden {
+      display: none
+    }
+
+    .tag.rnd {
+      border-style: dashed
+    }
+
+    .rd {
+      border: 1px solid var(--sky);
+      border-radius: 12px;
+      background: var(--navy);
+      color: var(--white);
+      padding: 0;
+      width: min(560px, calc(100vw - 24px));
+      max-height: min(82vh, 680px);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .rd[open] {
+      display: flex;
+      flex-direction: column
+    }
+
+    .rd::backdrop {
+      background: rgba(0, 23, 31, .82)
+    }
+
+    .rd-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .rd-h h2 {
+      margin: 0;
+      font: 700 20px/1.2 var(--hd)
+    }
+
+    .rd-h p {
+      margin: 2px 0 0;
+      color: var(--mute);
+      font-size: 13.5px
+    }
+
+    .rd-h .reset {
+      height: 36px;
+      padding: 0 14px;
+      flex: none
+    }
+
+    .rd-l {
+      margin: 0;
+      padding: 12px 16px 16px 40px;
+      overflow-y: auto;
+      columns: 2 190px;
+      column-gap: 28px
+    }
+
+    .rd-l li {
+      padding: 3px 0;
+      break-inside: avoid;
+      overflow-wrap: anywhere
+    }
+
+    .rd-l li::marker {
+      color: var(--sky);
+      font-variant-numeric: tabular-nums
+    }
+
+    @media (max-width:700px) {
+      .toggle-bar {
+        top: 20px;
+        right: 12px
+      }
+    }
+
+    h1 {
+      font: 700 clamp(28px, 5vw, 40px)/1.05 var(--hd);
+      margin: 0 0 4px;
+      letter-spacing: -.01em
+    }
+
+    .sub {
+      margin: 0 0 22px;
+      color: var(--mute)
+    }
+
+    .bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+      gap: 10px;
+      align-items: end
+    }
+
+    label {
+      display: block;
+      font-size: 12.5px;
+      color: var(--mute);
+      margin-bottom: 4px
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+      color: inherit
+    }
+
+    input[type=search],
+    select {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      background: var(--navy);
+      border: 1px solid var(--sea);
+      border-radius: 8px;
+      color: var(--white)
+    }
+
+    select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--sky) 50%), linear-gradient(135deg, var(--sky) 50%, transparent 50%);
+      background-position: calc(100% - 17px) 18px, calc(100% - 12px) 18px;
+      background-size: 5px 5px;
+      background-repeat: no-repeat;
+      padding-right: 30px
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, .5)
+    }
+
+    .reset {
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 8px;
+      border: 1px solid var(--sky);
+      background: transparent;
+      color: var(--sky);
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    .reset:hover {
+      background: var(--sky);
+      color: var(--ink)
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px
+    }
+
+    .chain:empty {
+
+      display: none
+    }
+
+
+    .chain {
+      margin: 16px 0 8px;
+      padding: 10px 12px;
+      background: var(--navy);
+      border-radius: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 0;
+      min-height: 48px
+    }
+
+    .chain .hint {
+      color: var(--mute);
+      font-size: 14px
+    }
+
+    .chain .ttl {
+      font-weight: 600;
+      margin-right: 10px
+    }
+
+    .chip {
+      border: 1px solid var(--sky);
+      background: var(--ink);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .chip:hover {
+      background: var(--sky);
+      color: var(--ink)
+    }
+
+    .lk {
+      width: 14px;
+      height: 2px;
+      background: var(--sky);
+      flex: none
+    }
+
+    .clr {
+      margin-left: auto;
+      background: none;
+      border: 0;
+      color: var(--sky);
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 4px 0 4px 12px
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      align-items: center;
+      margin: 12px 0 8px;
+      color: var(--mute);
+      font-size: 13.5px
+    }
+
+    .sw {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: -1px
+    }
+
+    .wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--mute);
+      padding: 10px 14px;
+      background: var(--navy);
+      white-space: nowrap
+    }
+
+    td {
+      padding: 9px 14px;
+      white-space: nowrap;
+      border-top: 1px solid var(--line);
+      vertical-align: middle
+    }
+
+    td.n {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
+      color: var(--sky);
+      font-weight: 600;
+      width: 1%
+    }
+
+    td.rq {
+      display: table-cell
+    }
+
+    tr.row {
+      cursor: pointer
+    }
+
+    tr.row:hover td,
+    tr.row:focus-visible td {
+      background: rgba(0, 52, 89, .6)
+    }
+
+    tr.m td:first-child {
+      box-shadow: inset 3px 0 0 var(--sky)
+    }
+
+    tr.o td:first-child {
+      box-shadow: inset 3px 0 0 var(--white)
+    }
+
+    tr.d td:first-child {
+      box-shadow: inset 3px 0 0 var(--sea)
+    }
+
+    tr.inch td {
+      background: rgba(0, 168, 232, .14)
+    }
+
+    tr.open td {
+      background: var(--navy)
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 0 6px 0 0;
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--sea);
+      background: rgba(0, 168, 232, .12);
+      color: var(--sky);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap
+    }
+
+    .tag:hover {
+      background: var(--sky);
+      color: var(--ink)
+    }
+
+    .tag.on {
+      background: var(--sky);
+      color: var(--ink);
+      border-color: var(--sky);
+      font-weight: 600
+    }
+
+    .cond {
+      display: inline-block;
+      margin: 0 6px 0 0;
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px dashed var(--line);
+      color: var(--mute);
+      font-size: 13px
+    }
+
+    .dim {
+      color: rgba(255, 255, 255, .4)
+    }
+
+    tr.det>td {
+      padding: 0;
+      background: var(--navy);
+      border-top: 0;
+      white-space: normal
+    }
+
+    .card {
+      padding: 6px 18px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 28px;
+      animation: in .18s ease-out;
+      background-color: #004560;
+    }
+
+    @keyframes in {
+      from {
+        opacity: 0;
+        transform: translateY(-4px)
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .card {
+        animation: none
+      }
+    }
+
+    .card h2 {
+      grid-column: 1/-1;
+      margin: 10px 0 0;
+      font: 700 21px/1.2 var(--hd)
+    }
+
+    .card h2 small {
+      font: 500 14px var(--bd);
+      color: var(--sky);
+      margin-right: 8px
+    }
+
+    .card section {
+      min-width: 0
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font: 600 13px var(--bd);
+      color: var(--sky);
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    dl {
+      margin: 0
+    }
+
+    .kv {
+      display: flex;
+      gap: 12px;
+      padding: 3px 0;
+      font-size: 14px
+    }
+
+    .kv dt {
+      flex: 0 0 118px;
+      color: var(--mute)
+    }
+
+    .kv dd {
+      margin: 0;
+      min-width: 0;
+      overflow-wrap: anywhere
+    }
+
+    .card .tag,
+    .card .cond {
+      white-space: normal;
+      margin-bottom: 4px
+    }
+
+    .card .tag .f {
+      display: inline
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .stat {
+      background: var(--ink);
+      border-radius: 8px;
+      padding: 5px 10px
+    }
+
+    .stat b {
+      display: block;
+      font: 700 16px/1.1 var(--hd);
+      text-align: center;
+    }
+
+    .stat span {
+      font-size: 12.5px;
+      color: var(--mute)
+    }
+
+    .items {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 14px
+    }
+
+    .items li {
+      padding: 2px 0;
+      overflow-wrap: anywhere
+    }
+
+    .items em {
+      color: var(--mute)
+    }
+
+    .sk {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 18px
+    }
+
+    .sk div {
+      display: grid;
+      grid-template-columns: 34px 1fr 30px;
+      gap: 8px;
+      align-items: center;
+      font-size: 13.5px
+    }
+
+    .sk i {
+      display: block;
+      height: 7px;
+      border-radius: 4px;
+      background: var(--ink);
+      overflow: hidden
+    }
+
+    .sk i u {
+      display: block;
+      height: 100%;
+      background: var(--sky)
+    }
+
+    .sk b {
+      text-align: right;
+      font-variant-numeric: tabular-nums
+    }
+
+    .full {
+      grid-column: 1/-1
+    }
+
+    .sh {
+      display: none
+    }
+
+    .empty {
+      padding: 28px 14px;
+      color: var(--mute);
+      white-space: normal
+    }
+
+    @media (max-width:700px) {
+      main {
+        padding: 20px 12px 44px
+      }
+
+      .bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .bar>:first-child {
+        grid-column: 1/-1
+      }
+
+      .bar>:last-child {
+        grid-column: 1/-1
+      }
+
+      .wrap {
+        overflow: hidden
+      }
+
+      table {
+        table-layout: fixed
+      }
+
+      th,
+      td {
+        padding: 9px 8px
+      }
+
+      th {
+        overflow: hidden;
+        text-overflow: ellipsis
+      }
+
+      .lg {
+        display: none
+      }
+
+      .sh {
+        display: inline
+      }
+
+      th:nth-child(1) {
+        width: 6.2rem
+      }
+
+      th:nth-child(3) {
+        width: 7.6rem
+      }
+
+      td.nm {
+        overflow: hidden;
+        text-overflow: ellipsis
+      }
+
+      td.rq {
+        overflow: hidden
+      }
+
+      .tag {
+        margin-right: 3px;
+        padding: 2px 6px;
+        font-size: 12px
+      }
+
+      .tag .f,
+      .cond {
+        display: none
+      }
+
+      td.rq:not(:has(.tag))::after {
+        content: "\2014";
+        color: rgba(255, 255, 255, .4)
+      }
+
+      .card .cond {
+        display: inline-block
+      }
+
+      .card {
+        grid-template-columns: 1fr;
+        padding: 4px 12px 16px
+      }
+
+      .kv dt {
+        flex-basis: 105px
+      }
+
+      .clr {
+        margin-left: 0
+      }
+    }
+
+    .tools {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px
+    }
+
+    .tools .toggle-bar {
+      position: static
+    }
+
+    .card {
+      position: relative
+    }
+
+    .card h2 {
+      padding-right: 84px
+    }
+
+    .edit-btn {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      height: 32px
+    }
+
+    .dd-b,
+    .ed-b {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      overflow-y: auto
+    }
+
+    .dd-b .reset {
+      height: 42px;
+      width: 100%
+    }
+
+    .dd-b p,
+    .ed-b p {
+      margin: 0;
+      color: var(--mute);
+      font-size: 14px
+    }
+
+    #ddm,
+    #efe {
+      min-height: 1.3em;
+      color: var(--sky)
+    }
+
+    #efe {
+      color: #ffcf56
+    }
+
+    .rd-h p {
+      margin: 2px 0 0;
+      color: var(--mute);
+      font-size: 13.5px
+    }
+
+    .ed-b input,
+    .ed-b textarea {
+      width: 100%;
+      padding: 9px 11px;
+      background: var(--ink);
+      border: 1px solid var(--sea);
+      border-radius: 8px;
+      color: var(--white);
+      font: inherit
+    }
+
+    .ed-b textarea {
+      resize: vertical;
+      min-height: 64px
+    }
+
+    .ed-f {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px
+    }
+
+    .ed-f .reset {
+      height: 40px;
+      padding: 0 20px
+    }
+
+    .ed-f .primary {
+      background: var(--sky);
+      color: var(--ink)
+    }
+
+    .ed-f .primary:hover {
+      background: var(--white);
+      border-color: var(--white)
+    }
+
+    @media (max-width: 440px) {
+      .tools {
+        /* position: static; */
+        justify-content: flex-end;
+        margin-bottom: 10px
+      }
+    }
+
+    #edf {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1
+    }
+
+    .ed-b {
+      min-height: 0
+    }
+
+    .qres {
+      display: grid;
+      gap: 4px;
+      max-height: 168px;
+      overflow-y: auto;
+      margin-top: 6px
+    }
+
+    .qres button {
+      text-align: left;
+      padding: 5px 10px;
+      background: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--white);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px
+    }
+
+    .qres button b {
+      color: var(--sky);
+      margin-right: 6px
+    }
+
+    .qres button:hover:not(:disabled) {
+      border-color: var(--sky);
+      background: var(--navy)
+    }
+
+    .qres button:disabled {
+      opacity: .5;
+      cursor: default
+    }
+
+    .qres p {
+      margin: 0;
+      color: var(--mute);
+      font-size: 14px
+    }
+
+    .note-t {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere
+    }
+
+    #ed {
+      /* position: absolute; */
+      position: sticky;
+      inset: auto;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      top: 12px;
+      height: auto;
+      max-height: none;
+      overflow: visible
+    }
+
+    #ed .ed-b {
+      overflow: visible
+    }
+
+    #ed .ed-f {
+      position: static;
+      background: none;
+      padding: 0;
+      margin: 0;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    #ed .qres {
+      /* max-height: none; */
+      height: auto;
+      max-height: 138px;
+      align-content: start;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px
+    }
+
+    #ed textarea {
+      resize: none;
+      min-height: 0
+    }
+
+    #efe {
+      min-height: 0;
+      flex: 1
+    }
+
+    .ed-f {
+      position: sticky;
+      bottom: -16px;
+      background: var(--navy);
+      padding: 10px 0 0;
+      margin-bottom: -4px
+    }
+
+    div.qres:has(p) {
+      display: none;
+    }
+
+    #ed:open~table,
+    #ed:open~* table,
+    body:has(#ed:open) table,
+    #rd:open~table,
+    #rd:open~* table,
+    body:has(#rd:open) table {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="tools"><button type="button" id="dataBtn" class="toggle-bar" aria-haspopup="dialog">Data</button><button
+        type="button" id="tbBtn" class="toggle-bar">Hide Search</button></div>
+    <h1>FFTA QUEST</h1>
+    <!-- <p class="sub">All 300 quests, searchable, sortable, and linked by what they require.</p> -->
+    <div class="bar">
+      <div><label for="q">Search all fields</label><input id="q" type="search" placeholder="" autocomplete="off"></div>
+      <div><label for="cf">Category</label><select id="cf"></select></div>
+      <div><label for="rf">Repeatable</label><select id="rf">
+          <option value="">All</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select></div>
+      <div><label for="sf">Sort by</label><select id="sf"></select></div>
+      <div><label for="sd">Order</label><select id="sd">
+          <option value="1">Ascending</option>
+          <option value="-1">Descending</option>
+        </select></div>
+      <button class="reset" id="rs" type="button">Reset</button>
+    </div>
+    <div class="chain" id="chain" aria-live="polite"></div>
+    <div class="meta"><span id="cnt" aria-live="polite"></span></div>
+    <div class="wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="lg">Quest Number</span><span class="sh">No.</span></th>
+            <th>Quest Name</th>
+            <th><span class="lg">Appearance Requirement</span><span class="sh">Requirement</span></th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </main>
+  <dialog id="ed" class="rd" aria-labelledby="edt">
+    <form id="edf" autocomplete="off">
+      <div class="rd-h">
+        <div>
+          <h2 id="edt"></h2>
+        </div><button type="button" class="reset" data-close>Cancel</button>
+      </div>
+      <div class="ed-b">
+        <div><label for="ef-name">Quest Name</label><input id="ef-name" type="text"></div>
+        <div><label for="ef-req">Appears when</label><textarea id="ef-req" rows="3"></textarea>
+          <label for="ef-qs" style="margin-top:8px">Add a quest to Appears when</label>
+          <input id="ef-qs" type="search" placeholder="Search quest name or number" autocomplete="off">
+          <div class="qres" id="ef-res"></div>
+        </div>
+        <div><label for="ef-rec">Recruit</label><textarea id="ef-rec" rows="2"></textarea></div>
+        <div><label for="ef-note">Note</label><textarea id="ef-note" rows="2"></textarea></div>
+        <div class="ed-f">
+          <p id="efe" role="alert"></p><button type="submit" class="reset primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="dd" class="rd" aria-labelledby="ddt">
+    <div class="rd-h">
+      <div>
+        <h2 id="ddt">Quest data</h2>
+        <p id="dds"></p>
+      </div><button type="button" class="reset" data-close>Close</button>
+    </div>
+    <div class="dd-b">
+      <p>Edits are saved in this browser. Export and import use the same semicolon-separated CSV format as the original
+        file.</p>
+      <button type="button" class="reset" id="ddx">Export CSV</button>
+      <button type="button" class="reset" id="ddi">Import CSV</button>
+      <button type="button" class="reset" id="ddr">Reset to default data</button>
+      <p id="ddm" role="status"></p>
+    </div>
+  </dialog>
+  <input type="file" id="imp" accept=".csv,text/csv" hidden>
+  <dialog id="rd" class="rd" aria-labelledby="rdt">
+    <div class="rd-h">
+      <div>
+        <h2 id="rdt"></h2>
+        <p id="rdc"></p>
+      </div><button type="button" class="reset" data-close>Close</button>
+    </div>
+    <ol id="rdl" class="rd-l"></ol>
+  </dialog>
+  <script id="d"
+    type="application/json">{"h":["Quest Number","Quest Name","Category","Price","Clear Condition","Availability","Appearance Requirement","Repeatable","Required Item 1","Required Item 2","Required Skills/Job","Reward Gil","Reward AP","Reward CP","Reward Item 1","Reward Item 2","Reward Item 3","Reward Item 4","Clan Skills (Com)","Clan Skills (Mag)","Clan Skills (Smt)","Clan Skills (Crf)","Clan Skills (App)","Clan Skills (Gth)","Clan Skills (Neg)","Clan Skills (Trk)","Recruit","Note"],"r":[["1","Herb Picking","Main Quest","200 Gil","Win battle","Forever, Giza Plains","Seen Joining Clan Nutsy Cutscene","No","---","---","---","600 Gil","40 AP","0 CP","---","---","---","---","---","---","---","---","---","---","---","---","None",""],["2","Thesis Hunt","Main Quest","600 Gil","Win battle","Forever, Lutia Pass","Herb Picking (#001)","No","---","---","---","4000 Gil","40 AP","100 CP","--Type 1 Random Item--","---","---","---","---","---","---","---","---","---","---","---","None",""],["3","The Cheetahs","Main Quest","800 Gil","Win battle","Forever, Nubswood","Thesis Hunt (#002)","No","---","---","---","6000 Gil","40 AP","100 CP","--Type 1 Random Item--","--Type 1 Random Item--","---","---","---","---","---","---","---","---","---","---","None",""],["4","Desert Peril","Main Quest","1000 Gil","Win battle","Forever, Eluut Sands","The Cheetahs (#003)","No","---","---","---","7000 Gil","40 AP","100 CP","--Type 2 Random Item--","---","---","---","---","---","---","---","---","---","---","---","None",""],["5","Twisted Flow","Main Quest","1000 Gil","Win battle","Forever, Ulei River","Desert Peril (#004)","No","---","---","---","8000 Gil","80 AP","100 CP","--Type 2 Random Item--","--Type 1 Random Item--","---","---","---","---","---","---","---","---","---","---","None",""],["6","Antilaws","Main Quest","---","Win battle","---","Twisted Flow (#005)","No","---","---","---","9000 Gil","40 AP","100 CP","--Type 2 Random Item--","--Type 2 Random Item--","R2 Antilaw","---","---","---","---","---","---","---","---","---","None",""],["7","Diamond Rain","Main Quest","1400 Gil","Win battle","Forever, Aisenfield","Antilaws (#006)","No","---","---","---","10600 Gil","40 AP","100 CP","--Type 2 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["8","Hot Awakening","Main Quest","1600 Gil","Win battle","Forever, Roda Volcano","Diamond Rain (#007)","No","---","---","---","11400 Gil","80 AP","100 CP","--Type 3 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["9","Magic Wood","Main Quest","1600 Gil","Win battle","Forever, Koringwood","Hot Awakening (#008)","No","---","---","---","12600 Gil","40 AP","100 CP","--Type 3 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["10","Emerald Keep","Main Quest","1800 Gil","Win battle","Forever, Salikawood","Magic Wood (#009)","No","---","---","---","13600 Gil","40 AP","100 CP","--Type 3 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["11","Pale Company","Main Quest","2000 Gil","Win battle","Forever, Nargai Cave","Emerald Keep (#010)","No","---","---","---","15000 Gil","80 AP","100 CP","--Type 3 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["12","Jagd Hunt","Main Quest","2200 Gil","Win battle","---","Pale Company (#011)","No","---","---","---","16000 Gil","40 AP","100 CP","--Type 4 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["13","The Bounty","Main Quest","2200 Gil","Win battle","Forever, Clan Encounter (Kudik Peaks)","Jagd Hunt (#011)","No","---","---","---","17200 Gil","40 AP","100 CP","--Type 4 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["14","Golden Clock","Main Quest","2400 Gil","Win battle","Forever, Jeraw Sands","The Bounty (#013)","No","---","---","---","18000 Gil","40 AP","100 CP","--Type 5 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["15","Scouring Time","Main Quest","---","Win battle","---","Golden Clock (#014)","No","---","---","---","19600 Gil","80 AP","100 CP","--Type 5 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["16","The Big Find","Main Quest","2800 Gil","Win battle","Forever, Uladon Bog","Scouring Time (#015)","No","---","---","---","20400 Gil","40 AP","100 CP","--Type 5 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["17","Desert Patrol","Main Quest","2800 Gil","Win battle","Forever, Gotor Sands","The Big Find (#016)","No","---","---","---","21400 Gil","40 AP","100 CP","--Type 5 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["18","Quiet Sands","Main Quest","3000 Gil","Win battle","Forever, Delia Dunes","Desert Patrol (#017)","No","---","---","---","22600 Gil","80 AP","100 CP","--Type 6 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["19","Materite Now!","Main Quest","3200 Gil","Win battle","Forever, Materiwood","Quiet Sands (#018)","No","---","---","---","23400 Gil","40 AP","100 CP","--Type 6 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["20","Present Day","Main Quest","---","Win battle","---","Materite Now! (#019)","No","---","---","---","25000 Gil","80 AP","100 CP","--Type 6 Random Item--","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["21","Hidden Vein","Main Quest","3400 Gil","Win battle","Forever, Tubola Cave","Present Day (#020)","No","---","---","---","26200 Gil","40 AP","100 CP","--Type 7 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["22","To Ambervale","Main Quest","---","Win battle","---","Hidden Vein (#021)","No","---","---","---","27000 Gil","40 AP","100 CP","--Type 7 Random Item--","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["23","Over The Hill","Main Quest","---","Win battle","---","To Ambervale (#022)","No","---","---","---","28600 Gil","80 AP","100 CP","--Type 7 Random Item--","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","None",""],["24","Royal Valley","Main Quest","---","Win battle","---","Over The Hill (#023), Haven't Cleared Game","No","---","---","---","0 Gil","0 AP","0 CP","---","---","---","---","---","---","---","---","---","---","---","---","None",""],["25","Wanted!","Main Quest","600 Gil","Win battle","Forever, Nubswood","Thesis Hunt (#002)","No","---","---","---","4600 Gil","40 AP","30 CP","Flower Vase","--Type 1 Random Item--","---","---","50","---","---","---","---","50","---","---","Human",""],["26","Wanted!","Main Quest","1800 Gil","Win battle","Forever, Jeraw Sands","Jagd Hunt (#012)","No","---","---","---","13600 Gil","40 AP","30 CP","--Type 4 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","35","---","---","---","---","---","---","40","Moogle",""],["27","Wanted!","Main Quest","400 Gil","Win battle","Forever, Giza Plains","Herb Picking (#001)","No","---","---","---","2800 Gil","40 AP","30 CP","--Type 1 Random Item--","---","---","---","50","---","---","---","---","---","---","40","Bangaa",""],["28","Wanted!","Main Quest","2400 Gil","Win battle","Forever, Uladon Bog","Scouring Time (#015)","No","---","---","---","18000 Gil","40 AP","30 CP","--Type 5 Random Item--","--Type 5 Random Item--","R5 Antilaw","--Random Law Card--","35","---","---","---","---","---","---","40","Nu Mou",""],["29","Wanted!","Main Quest","6000 Gil","Win battle","Forever, Jagd Helje","Present Day (#020), Den of Evil (#064)","No","---","---","---","45000 Gil","40 AP","30 CP","Zanmato","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","35","---","---","---","---","---","---","40","Viera",""],["30","Wanted!","Main Quest","3000 Gil","Win battle","Forever, Jagd Ahli","The Bounty (#013), Wanted! (#025), Exploration (#065)","No","---","---","---","22600 Gil","40 AP","30 CP","Onlyone","--Type 5 Random Item--","R6 Antilaw","--Random Law Card--","35","---","---","---","---","---","---","40","Human",""],["31","Ruby Red","Main Quest","2200 Gil","Win battle","Forever, Baguba Port","Desert Patrol (#017), Wyrms Awaken (#102)","No","---","---","---","16000 Gil","40 AP","30 CP","Wyrmstone","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","50","---","---","---","Finish ANY mission successfully with the mission item Wyrmstone to recruit Pallanza",""],["32","Tower Ruins","Main Quest","2000 Gil","Win battle","Forever, Koringwood","Hot Awakening (#008), Examined The Hero Gaol","No","---","---","---","0 Gil","30 AP","30 CP","--Type 3 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","50","---","---","---","---",""],["33","Battle In Aisen","Main Quest","2000 Gil","Win battle","Forever, Aisenfield","Hot Awakening (#008), Tower Ruins (#032)","No","---","---","---","0 Gil","40 AP","30 CP","--Type 3 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["34","Magewyrm","Main Quest","2000 Gil","Win battle","Forever, Delia Dunes","Desert Patrol (#017), Battle In Aisen (#033)","No","---","---","---","0 Gil","50 AP","30 CP","--Type 6 Random Item--","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","---","50","---",""],["35","Salika Keep","Main Quest","2000 Gil","Win battle","Forever, Salikawood","Desert Patrol (#017), Magewyrm (#034)","No","---","---","---","0 Gil","60 AP","30 CP","Ayvuir Red","---","--Random Law Card--","--Random Law Card--","25","---","---","---","50","---","---","---","Expert Job",""],["36","Twin Swords","Main Quest","2000 Gil","Win battle","Forever, Eluut Sands","Twisted Flow (#005), Village Hunt (#037), Examined The Hero Gaol","No","---","---","Com 10","0 Gil","40 AP","30 CP","Ayvuir Blue","--Type 2 Random Item--","---","---","25","---","---","---","---","---","50","---","---",""],["37","Village Hunt","Main Quest","600 Gil","Win battle","Forever, Eluut Sands","The Cheetahs (#003)","No","---","---","---","4200 Gil","40 AP","30 CP","--Type 2 Random Item--","---","---","---","50","---","---","---","---","---","---","---","Moogle",""],["38","Fire! Fire!","Main Quest","400 Gil","Win battle","10 days, Cyril","Herb Picking (#001)","No","---","---","---","3600 Gil","40 AP","30 CP","Sprinkler","--Type 1 Random Item--","---","---","100","---","---","---","40","---","40","---","Basic Job",""],["39","The Wanderer","Main Quest","1600 Gil","Win battle","Forever, Muscadet","Scouring Time (#015)","No","---","---","---","11400 Gil","40 AP","30 CP","Tonberrian","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","25","25","---","---","---","---","---","---","Basic Job",""],["40","Battle Tourney","Main Quest","1000 Gil","Win battle","15 days, Bervenia Palace","Present Day (#020)","20 days","---","---","---","7000 Gil","40 AP","0 CP","Sequence","--Type 6 Random Item--","--Random Law Card--","---","50","---","---","---","---","---","---","---","Fighter",""],["41","Mage Tourney","Main Quest","1000 Gil","Win battle","15 days, Bervenia Palace","Present Day (#020)","20 days","---","---","---","7000 Gil","40 AP","0 CP","Sapere Aude","--Type 5 Random Item--","--Random Law Card--","---","25","50","---","---","---","---","---","---","Mage",""],["42","Swimming Meet","Main Quest","1000 Gil","Win battle","15 days, Bervenia Palace","Present Day (#020)","20 days","---","---","---","7000 Gil","40 AP","0 CP","Acacia Hat","--Type 4 Random Item--","--Random Law Card--","---","25","---","---","---","---","---","50","---","Support",""],["43","Clan League","Main Quest","3000 Gil","Win battle","25 days, Bervenia Palace","To Ambervale (#022), Completed White Kupos [League]","20 days","---","---","---","22600 Gil","80 AP","40 CP","Peytral","--Type 7 Random Item--","Dmg2: Human [Law]","---","50","---","---","---","---","---","---","---","*Littlevili*",""],["44","Snow In Lutia","Main Quest","400 Gil","Win battle","Forever, Lutia Pass","Herb Picking (#001)","No","---","---","---","3600 Gil","40 AP","40 CP","--Type 1 Random Item--","---","---","---","25","---","---","40","---","100","---","---","---",""],["45","Frosty Mage","Main Quest","400 Gil","Win battle","Forever, Lutia Pass","Herb Picking (#001), Snow In Lutia (#044)","No","---","---","---","4000 Gil","40 AP","40 CP","Laglace Sword","--Type 1 Random Item--","---","---","25","40","40","---","---","---","---","---","---",""],["46","Prof In Trouble","Main Quest","600 Gil","Win battle","25 days, Lutia Pass","Herb Picking (#001), Snow In Lutia (#044)","No","---","---","---","4000 Gil","40 AP","40 CP","Gedegg Soup","---","---","---","25","---","---","---","---","---","---","100","---",""],["47","Hot Recipe","Main Quest","1000 Gil","Win battle","25 days, Roda Volcano","Diamond Rain (#007)","No","---","---","---","7000 Gil","40 AP","40 CP","Gedegg Soup","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","---",""],["48","S.O.S.","Main Quest","1000 Gil","Win battle","15 days, Koringwood","Hot Awakening (#008)","No","---","---","Trk 7","7800 Gil","40 AP","30 CP","Topaz Armring","--Type 3 Random Item--","R3 Antilaw","--Random Law Card--","25","---","---","---","---","---","---","50","Viera",""],["49","A Lost Ring","Main Quest","600 Gil","Win battle","15 days, Ulei River","Desert Peril (#004)","No","---","---","---","5200 Gil","40 AP","30 CP","--Type 2 Random Item--","--Type 2 Random Item--","---","---","25","---","---","---","50","---","---","---","---",""],["50","Staring Eyes","Main Quest","600 Gil","Win battle","25 days, Cyril","The Cheetahs (#003), Watching You (#113)","No","Ahriman Eye [UNUSED]","---","---","4600 Gil","50 AP","30 CP","Vesper","--Type 2 Random Item--","---","---","25","---","---","50","---","---","---","---","---",""],["51","Desert Rose","Main Quest","2000 Gil","Win battle","15 days, Gotor Sands","The Big Find (#016)","No","Flower Vase","---","---","0 Gil","40 AP","30 CP","Blue Rose","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","Basic Job",""],["52","Friend Trouble","Main Quest","1200 Gil","Win battle","25 days, Kudik Peaks","Jagd Hunt (#012)","No","---","---","---","9000 Gil","40 AP","30 CP","--Type 4 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","---","50","Support",""],["53","Flesh & Bones","Main Quest","2400 Gil","Win battle","25 days, Baguba Port","The Big Find (#016), Smuggle Bust (#105)","No","---","---","---","18000 Gil","40 AP","40 CP","Tiger Hide","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","Support",""],["54","For A Song","Main Quest","2200 Gil","Win battle","25 days, Materiwood","Quiet Sands (#018)","No","---","---","---","16000 Gil","40 AP","40 CP","Trichord","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","25","50","---","---","---","---","---","---","Mage",""],["55","White Flowers","Main Quest","200 Gil","Win battle","25 days, Giza Plains","The Cheetahs (#003)","No","---","---","---","1600 Gil","40 AP","40 CP","White Flowers","--Type 1 Random Item--","---","---","25","---","---","---","---","50","---","---","---",""],["56","New Antilaw","Main Quest","4600 Gil","Win battle","25 days, Siena Gorge","To Ambervale (#022), Seen Ezel's New Idea Cutscene","No","---","---","---","34000 Gil","40 AP","40 CP","Amber","--Type 7 Random Item--","Allmighty","--Random Law Card--","25","50","---","---","---","---","---","---","---",""],["57","Prison Break","Main Quest","1000 Gil","Win battle","25 days, Sprohm","Materite Now! (#019)","20 days","---","---","---","7000 Gil","40 AP","20 CP","Helje Key","--Type 6 Random Item--","--Random Law Card--","---","25","---","---","---","---","---","50","---","---",""],["58","Royal Ruins","Main Quest","1000 Gil","Win battle","25 days, Nargai Cave","Emerald Keep (#010), Golden Gil (#114)","No","---","---","---","7000 Gil","40 AP","40 CP","--Type 3 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","---",""],["59","Sketchy Thief","Main Quest","2400 Gil","Win battle","25 days, Deti Plains","To Ambervale (#022)","No","---","---","---","18000 Gil","40 AP","40 CP","Sketch Book","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","---",""],["60","Showdown!","Main Quest","4800 Gil","Win battle","10 days, Ozmonfield","Quiet Sands (#018), A Dragon's Aid (#066)","No","---","---","---","36000 Gil","40 AP","35 CP","--Type 6 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Fighter",""],["61","Hit Again","Main Quest","1000 Gil","Win battle","Forever, Jagd Dorsa","The Bounty (#013)","No","---","---","---","7000 Gil","40 AP","35 CP","--Type 5 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","25","50","---","---","---","---","---","---","---",""],["62","Oasis Frogs","Main Quest","600 Gil","Win battle","Forever, Cadoan","Twisted Flow (#005)","No","---","---","---","4600 Gil","40 AP","35 CP","The Hero Gaol","--Type 2 Random Item--","---","---","25","---","---","---","50","---","---","---","Finish ANY mission successfully with the mission item The Hero Gaol to recruit Lini ",""],["63","Missing Prof","Main Quest","2400 Gil","Win battle","25 days, Tubola Cave","Present Day (#020), Prof In Trouble (#046)","No","---","---","---","18000 Gil","40 AP","35 CP","--Type 7 Random Item--","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","---","50","*Quin*",""],["64","Den of Evil","Main Quest","3000 Gil","Win battle","Forever, Tubola Cave","Present Day (#020)","No","Helje Key","---","Com 25","22600 Gil","40 AP","35 CP","--Type 7 Random Item--","---","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Expert Job",""],["65","Exploration","Main Quest","1000 Gil","Win battle","Forever, Gotor Sands","The Big Find (#016)","No","---","---","---","0 Gil","40 AP","35 CP","--Type 5 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","30","---","30","---","30","---","30","30","---",""],["66","A Dragon's Aid","Main Quest","4200 Gil","Win battle","25 days, Delia Dunes","Desert Patrol (#017), Wyrms Awaken (#102)","No","Wyrmstone [UNUSED]","---","---","31600 Gil","40 AP","40 CP","--Type 6 Random Item--","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","Expert Job",""],["67","Missing Meow","Main Quest","3600 Gil","Win battle","Forever, Deti Plains","Clear Game, Lucky Charm (#191)","No","Rabbit Tail","---","---","27000 Gil","40 AP","30 CP","Ally Finder2","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","---","50","---",""],["68","Fowl Thief","Main Quest","400 Gil","Win battle","Forever, Cyril","Thesis Hunt (#002)","No","---","---","---","3600 Gil","40 AP","30 CP","--Type 1 Random Item--","--Type 1 Random Item--","---","---","25","---","50","---","---","---","---","---","---",""],["69","Free Sprohm!","Main Quest","400 Gil","Win battle","Forever, Sprohm","Thesis Hunt (#002), Read Thief Exposed","No","---","---","---","2400 Gil","40 AP","50 CP","--Type 1 Random Item--","--Type 2 Random Item--","---","---","30","30","30","30","30","30","30","30","---",""],["70","Raven's Oath","Main Quest","800 Gil","Win battle","Forever, Giza Plains","Thesis Hunt (#002), Read Area Freed!","No","---","---","---","6400 Gil","40 AP","30 CP","--Type 1 Random Item--","--Type 2 Random Item--","---","---","25","50","---","---","---","---","---","---","---",""],["71","Nubswood Base","Main Quest","1000 Gil","Win battle","Forever, Nubswood","Antilaws (#006), Read Borzoi's Plan","No","Spiritstone [UNUSED]","---","---","7000 Gil","40 AP","30 CP","--Type 2 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","25","50","---","---","---","---","---","---","---",""],["72","Lutia Mop-up","Main Quest","800 Gil","Win battle","Forever, Lutia Pass","Antilaws (#006), Nubswood Base (#071)","No","---","---","---","6000 Gil","40 AP","30 CP","--Type 2 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["73","Borzoi Falling","Main Quest","1000 Gil","Win battle","Forever, Cyril","Antilaws (#006), Lutia Mop-up (#072)","No","---","---","Com 12","7200 Gil","40 AP","40 CP","Shijin Shield","---","--Random Law Card--","--Random Law Card--","25","---","50","---","---","---","---","---","---",""],["74","Cadoan Watch","Main Quest","1000 Gil","Win battle","Forever, Cadoan","Antilaws (#006), Read Crime Ring","No","---","---","---","8200 Gil","40 AP","40 CP","--Type 2 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","50","---","---","---","---","---",""],["75","Free Cadoan!","Main Quest","400 Gil","Win battle","Forever, Cadoan","Antilaws (#006), Read The Redwings","No","---","---","---","2400 Gil","50 AP","50 CP","Red Robe","---","--Random Law Card--","--Random Law Card--","30","30","30","30","30","30","30","30","---",""],["76","Fire Sigil","Main Quest","600 Gil","Win battle","Forever, Roda Volcano","Diamond Rain (#007), Read Falgabird","No","---","---","---","4600 Gil","40 AP","30 CP","Fire Sigil","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["77","Free Baguba!","Main Quest","400 Gil","Win battle","Forever, Baguba Port","Jagd Hunt (#012), Read The Spiritstone","No","---","---","---","2400 Gil","50 AP","50 CP","Delta Fang","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","30","30","30","30","30","30","30","30","---",""],["78","Water Sigil","Main Quest","2400 Gil","Win battle","Forever, Nargai Cave","Jagd Hunt (#012), Read The Sages","No","---","---","---","18000 Gil","40 AP","30 CP","Water Sigil","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["79","Wind Sigil","Main Quest","2400 Gil","Win battle","Forever, Koringwood","Jagd Hunt (#012), Read The Sages","No","---","---","---","18000 Gil","40 AP","30 CP","Wind Sigil","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["80","Earth Sigil","Main Quest","2400 Gil","Win battle","Forever, Aisenfield","Jagd Hunt (#012), Read The Sages","No","---","---","---","18000 Gil","40 AP","30 CP","Earth Sigil","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["81","The Redwings","Main Quest","3000 Gil","Win battle","Forever, Salikawood","Jagd Hunt (#012), Read The Sages","No","---","---","---","22600 Gil","40 AP","40 CP","Reaper Cloak","---","--Random Law Card--","--Random Law Card--","25","---","---","50","---","---","---","---","---",""],["82","Free Muscadet!","Main Quest","400 Gil","Win battle","Forever, Muscadet","Scouring Time (#015), Read Weird Minstrel","No","---","---","---","2400 Gil","50 AP","50 CP","Hanya Helm","---","--Random Law Card--","--Random Law Card--","30","30","30","30","30","30","30","30","---",""],["83","Foreign Fiend","Main Quest","2400 Gil","Win battle","Forever, Ulei River","Scouring Time (#015), Read Foreign Fiends","No","---","---","---","18000 Gil","50 AP","30 CP","--Type 5 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Expert Job",""],["84","Foreign Fiend","Main Quest","2800 Gil","Win battle","Forever, Baguba Port","Scouring Time (#015), Foreign Fiend (#83)","No","---","---","---","20400 Gil","60 AP","30 CP","--Type 5 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Expert Job",""],["85","Foreign Fiend","Main Quest","3000 Gil","Win battle","Forever, Uladon Bog","Scouring Time (#015), Foreign Fiend (#84)","No","---","---","---","22600 Gil","70 AP","30 CP","--Type 5 Random Item--","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Expert Job",""],["86","Last Stand","Main Quest","4600 Gil","Win battle","Forever, Nubswood","Scouring Time (#015), Foreign Fiend (#85)","No","---","---","---","34000 Gil","80 AP","30 CP","Dread Soul","Judge Coat","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","Expert Job",""],["87","Free Bervenia!","Main Quest","400 Gil","Win battle","Forever, Cyril","Clear Game, Read Gukko's Return","No","---","---","---","2400 Gil","50 AP","50 CP","Rukavi Soul","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","30","30","30","30","30","30","Support",""],["88","The Worldwyrm","Main Quest","3000 Gil","Win battle","Forever, Roda Volcano","Clear Game","No","---","---","---","22600 Gil","40 AP","20 CP","Ogma's Seal","--Type 7 Random Item--","Allmighty","--Random Law Card--","50","---","---","---","---","---","---","---","Human",""],["89","Moogle Bride","Main Quest","2400 Gil","Win battle","Forever, Materiwood","Clear Game, The Worldwyrm (#088)","No","---","---","---","18000 Gil","40 AP","10 CP","Esteroth","--Type 6 Random Item--","R6 Antilaw","--Random Law Card--","25","---","---","---","---","---","---","50","Moogle",""],["90","Clan Law","Main Quest","1800 Gil","Win battle","Forever, Ozmonfield","Clear Game, Moogle Bride (#089)","No","---","---","---","13600 Gil","40 AP","20 CP","Master Brave","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","---",""],["91","Challengers?","Main Quest","2400 Gil","Win battle","Forever, Delia Dunes","Desert Patrol (#017), Down To Earth (#152)","No","---","---","---","18000 Gil","40 AP","30 CP","Chirijiraden","---","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["92","Cursed Bride","Main Quest","1000 Gil","Win battle","Forever, Eluut Sands","Emerald Keep (#010), Pirates Ahoy (#124)","No","---","---","---","8200 Gil","40 AP","30 CP","Last Letter","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["93","Flan Breakout!","Main Quest","1800 Gil","Win battle","Forever, Salikawood","Scouring Time (#015)","No","---","---","---","13600 Gil","40 AP","30 CP","Heretic Rod","---","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","---",""],["94","Sorry, Friend","Main Quest","1800 Gil","Win battle","Forever, Deti Plains","Present Day (#020)","No","---","---","---","13600 Gil","40 AP","30 CP","Bangaa Helm","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["95","Carrot!","Main Quest","5400 Gil","Win battle","Forever, Jagd Helje","Clear Game, Thorny Dreams (#193), Den of Evil (#064)","No","Rusty Spear","---","---","40600 Gil","40 AP","30 CP","Malbow","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","50","---","---","Viera",""],["96","Shadow Clan","Main Quest","4800 Gil","Win battle","Forever, Jagd Ahli","Clear Game, Missing Meow (#067), Exploration (#065)","No","---","---","---","36000 Gil","40 AP","30 CP","Ninja Tabi","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","50","---","---","---","Bangaa",""],["97","The Dark Blade","Main Quest","3000 Gil","Win battle","Forever, Jagd Dorsa","Clear Game, Beastly Gun (#284)","No","Spiritstone","Bent Sword","---","22600 Gil","40 AP","30 CP","Ebon Blade","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","---",""],["98","The Hero Blade","Main Quest","3600 Gil","Win battle","Forever, Baguba Port","Clear Game, Carrot! (#095), Den of Evil (#064)","No","Rusty Sword","Mysidia Alloy","---","27000 Gil","40 AP","30 CP","Excalibur2","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["99","The Fey Blade","Main Quest","4200 Gil","Win battle","Forever, Siena Gorge","Clear Game, Alchemist Boy (#192)","No","Zodiac Ore","Blood Apple","---","31600 Gil","40 AP","30 CP","Masamune 100","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","---","---","---",""],["100","Fiend Run","Main Quest","1200 Gil","Win battle","20 days, Clan Encounter (Cyril)","Magic Wood (#009), Seen Monster Escape Cutscene","No","---","---","---","8800 Gil","40 AP","30 CP","--Type 3 Random Item--","---","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","50","Basic Job",""],["101","Clan Roundup","Main Quest","600 Gil","Win battle","25 days, Clan Encounter (Lutia Pass)","Desert Peril (#004)","No","---","---","---","4600 Gil","40 AP","30 CP","--Type 2 Random Item--","--Type 2 Random Item--","---","---","25","---","---","---","---","---","50","---","Basic Job",""],["102","Wyrms Awaken","Main Quest","3000 Gil","Win battle","35 days, Clan Encounter (Roda Volcano)","Desert Patrol (#017)","No","---","---","---","22600 Gil","40 AP","30 CP","--Type 6 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","---",""],["103","Mythril Rush","Main Quest","1000 Gil","Win battle","Forever, Clan Encounter (Tubola Cave)","Present Day (#020), Missing Prof (#063)","20 days","---","---","---","7000 Gil","40 AP","20 CP","Silvril","---","--Random Law Card--","---","---","---","---","---","---","---","50","---","---",""],["104","Stolen Scoop","Main Quest","1200 Gil","Win battle","25 days, Clan Encounter (Baguba Port)","The Big Find (#016)","No","---","---","---","9000 Gil","40 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","---",""],["105","Smuggle Bust","Main Quest","1800 Gil","Win battle","20 days, Clan Encounter (Baguba Port)","The Big Find (#016), Poachers (#108)","No","---","---","---","13600 Gil","40 AP","20 CP","Chocobo Skin","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","25","---","---","---","---","---","50","---","---",""],["106","Resistance","Main Quest","800 Gil","Win battle","25 days, Clan Encounter (Eluut Sands)","Antilaws (#006), Seen Antilaw Resistance Cutscene","No","---","---","---","6000 Gil","40 AP","20 CP","--Type 2 Random Item--","--Type 2 Random Item--","R3 Antilaw","---","50","---","---","---","---","---","50","---","---",""],["107","Old Friends","Main Quest","600 Gil","Win battle","25 days, Clan Encounter (Materiwood)","Quiet Sands (#018), S.O.S. (#048)","No","---","---","---","4600 Gil","80 AP","30 CP","Beastspear","---","--Random Law Card--","---","50","---","---","---","---","---","50","---","Viera",""],["108","Poachers","Main Quest","1600 Gil","Win battle","25 days, Clan Encounter (Kudik Peaks)","Jagd Hunt (#012), Friend Trouble (#052)","No","---","---","---","11400 Gil","40 AP","30 CP","Tiger Hide","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","50","---","---",""],["109","Snow Fairy","Main Quest","1200 Gil","Win battle","20 days, Clan Encounter (Giza Plains)","The Bounty (#013)","No","---","---","---","9000 Gil","40 AP","20 CP","--Type 3 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","50","---","---",""],["110","Revenge","Main Quest","1800 Gil","Win battle","25 days, Clan Encounter (Nargai Cave)","Pale Company (#011), Weaver's War (#287)","No","---","---","---","13600 Gil","40 AP","20 CP","--Type 4 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","50","---","---","---","---","---","50","---","Expert Job",""],["111","Retrieve Mail!","Main Quest","1600 Gil","Win battle","25 days, Clan Encounter (Cyril)","Pale Company (#011)","No","---","---","---","11400 Gil","40 AP","20 CP","--Type 4 Random Item--","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","50","50","Basic Job",""],["112","A Challenge","Main Quest","600 Gil","Win battle","25 days, Clan Encounter (Ulei River)","Desert Peril (#004)","No","---","---","Neg 4","4200 Gil","40 AP","30 CP","--Type 2 Random Item--","--Type 1 Random Item--","---","---","25","---","---","---","---","---","50","---","Fighter",""],["113","Watching You","Dispatch Quest","400 Gil","battles:2","---","The Cheetahs (#003)","No","---","---","---","2800 Gil","70 AP","0 CP","Ahriman Eye","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","60","---","---","---","10","---","60","---",""],["114","Golden Gil","Dispatch Quest","800 Gil","days:20","---","Emerald Keep (#010)","No","---","---","---","6400 Gil","70 AP","0 CP","Ancient Coins","--Type 3 Random Item--","---","---","---","10","---","80","---","10","---","10","---",""],["115","Dueling Sub","Dispatch Quest","200 Gil","days:3","---","Herb Picking (#001)","No","---","---","Soldier","1800 Gil","30 AP","0 CP","--Type 1 Random Item--","---","--Random Law Card--","--Random Law Card--","---","10","---","---","---","---","100","10","---",""],["116","Gulug Ghost","Dispatch Quest","1600 Gil","battles:2","---","Present Day (#020)","20 days","---","---","---","11800 Gil","50 AP","0 CP","Fire Sigil","--Type 7 Random Item--","--Random Law Card--","---","---","80","---","10","---","10","---","10","---",""],["117","Water City","Dispatch Quest","1400 Gil","battles:2","---","Present Day (#020)","20 days","---","---","---","10000 Gil","50 AP","0 CP","Water Sigil","--Type 6 Random Item--","--Random Law Card--","---","---","80","10","---","10","---","10","---","---",""],["118","Mirage Tower","Dispatch Quest","1600 Gil","battles:2","---","Present Day (#020)","20 days","---","---","Moogle Knight","11800 Gil","50 AP","0 CP","Wind Sigil","--Type 7 Random Item--","--Random Law Card--","---","---","80","---","10","---","10","---","10","---",""],["119","A Barren Land","Dispatch Quest","1800 Gil","battles:2","---","Present Day (#020)","20 days","---","---","---","13200 Gil","50 AP","0 CP","Earth Sigil","--Type 6 Random Item--","--Random Law Card--","---","---","80","10","---","10","---","10","---","---",""],["120","Cadoan Meet","Dispatch Quest","1400 Gil","battles:1","---","Quiet Sands (#018)","20 days","---","---","Black Mage","10600 Gil","40 AP","0 CP","Magic Trophy","--Type 4 Random Item--","--Random Law Card--","---","---","80","---","10","10","10","---","10","---",""],["121","Sprohm Meet","Dispatch Quest","600 Gil","battles:1","---","Scouring Time (#015)","20 days","---","---","Fighter","4200 Gil","40 AP","0 CP","Fight Trophy","--Type 3 Random Item--","--Random Law Card--","---","60","10","---","10","10","10","---","---","---",""],["122","Run For Fun","Dispatch Quest","600 Gil","battles:1","---","Diamond Rain (#007)","No","---","---","Juggler","5200 Gil","50 AP","0 CP","Sport Trophy","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","80","---","10","10","---","---",""],["123","Hungry Ghost","Dispatch Quest","600 Gil","days:10","---","Antilaws (#006)","No","Dragon Bone","---","---","4200 Gil","50 AP","0 CP","Elda's Cup","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","10","---","---","80","Finish ANY mission successfully with the mission item Elda's Cup to recruit Eldena",""],["124","Pirates Ahoy","Dispatch Quest","800 Gil","battles:2","---","Emerald Keep (#010)","No","---","---","---","6400 Gil","70 AP","0 CP","Coast Medal","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","10","---","10","---","---",""],["125","Castle Sit-In","Dispatch Quest","600 Gil","battles:1","---","Hot Awakening (#008), Morning Woes (#151)","No","---","---","---","4600 Gil","50 AP","0 CP","Guard Medal","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","80","10","10","---","---","10","10","---",""],["126","Wine Delivery","Dispatch Quest","1000 Gil","days:10","---","Scouring Time (#015)","No","---","---","---","7000 Gil","50 AP","0 CP","Rainbowite","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","---","80","---","10","10","---",""],["127","Broken Tunes","Dispatch Quest","1600 Gil","days:15","---","Desert Patrol (#017), Good Bread (#276)","No","---","---","---","11400 Gil","50 AP","0 CP","Cat's Tears","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","80","10","---","---","10","---",""],["128","Falcon Flown","Dispatch Quest","1600 Gil","days:10","---","Quiet Sands (#018), Sword Needed (#277)","No","Skull","---","---","11400 Gil","50 AP","0 CP","Dame's Blush","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","20","20","20","20","20","20","20","100","---",""],["129","Danger Pass","Dispatch Quest","1000 Gil","enemies:15","---","Scouring Time (#015), Hundred-Eye (#165)","No","---","---","---","7800 Gil","80 AP","0 CP","Thunderstone","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","80","10","10","10","---",""],["130","Mist Stars","Dispatch Quest","1200 Gil","battles:2","---","The Big Find (#016)","No","---","---","---","9000 Gil","70 AP","0 CP","Stormstone","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","80","10","10","---","---","---",""],["131","Adaman Alloy","Dispatch Quest","2000 Gil","battles:2","---","The Bounty (#013)","No","Adamantite","Adamantite","Smt 15","0 Gil","70 AP","0 CP","Adaman Alloy","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","80","---","10","10","---","---","---",""],["132","Mysidia Alloy","Dispatch Quest","2000 Gil","days:15","---","Jagd Hunt (#012)","No","Adamantite","Silvril","Smt 15","0 Gil","50 AP","0 CP","Mysidia Alloy","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","---","10","10","10","10","---",""],["133","Crusite Alloy","Dispatch Quest","2000 Gil","days:10","---","Pale Company (#011)","No","Zodiac Ore","Zodiac Ore","Smt 15","0 Gil","50 AP","0 CP","Crusite Alloy","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","10","10","10","10","---","---",""],["134","Faceless Dolls","Dispatch Quest","1400 Gil","enemies:10","---","Quiet Sands (#018)","No","---","---","---","10800 Gil","70 AP","0 CP","Blood Shawl","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","---","---","10","80","---",""],["135","Faithful Fairy","Dispatch Quest","1400 Gil","enemies:5","---","Materite Now! (#019)","No","Fairy Wing","---","---","10000 Gil","50 AP","0 CP","Ahriman Wing","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","80","10","10","10","---",""],["136","For The Lady","Dispatch Quest","1400 Gil","battles:2","---","Materite Now! (#019)","No","Stolen Gil","---","---","10600 Gil","70 AP","0 CP","Fairy Wing","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","10","---","10","80","---",""],["137","Seven Nights","Dispatch Quest","1600 Gil","days:15","---","Present Day (#020)","No","Ancient Bills","---","---","11800 Gil","50 AP","0 CP","Goldcap","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","10","80","10","10","---",""],["138","Shady Deals","Dispatch Quest","1400 Gil","days:10","---","Present Day (#020), Janitor Duty (#281)","No","Secret Books","---","---","10600 Gil","50 AP","0 CP","Life Water","--Type 7 Random Item--","---","---","---","---","10","10","80","---","10","---","---",""],["139","Earthy Colors","Dispatch Quest","400 Gil","days:5","---","The Cheetahs (#003), Life Or Death (#210)","No","---","---","---","2800 Gil","30 AP","0 CP","Ancient Text","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","10","60","60","10","10","---",""],["140","Lost Heirloom","Dispatch Quest","800 Gil","battles:3","---","Magic Wood (#009)","No","Neighbor Pin","---","---","6000 Gil","80 AP","0 CP","Justice Badge","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","---","10","80","10","---",""],["141","Young Love","Dispatch Quest","1800 Gil","days:10","---","To Ambervale (#022)","No","Ahriman Wing","---","---","13200 Gil","50 AP","0 CP","Friend Badge","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","20","20","---","80","20","---","20","---",""],["142","Ghosts Of War","Dispatch Quest","1600 Gil","days:30","---","To Ambervale (#022), Young Love (#141)","No","Tranquil Box","---","Trk 40","12400 Gil","80 AP","0 CP","Edaroya Tome","--Type 7 Random Item--","---","---","---","20","20","20","20","---","---","80","---",""],["143","The Last Day","Dispatch Quest","200 Gil","days:5","---","Thesis Hunt (#002)","No","Ancient Medal","---","---","1800 Gil","30 AP","0 CP","Homework","--Type 1 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","80","10","10","---","---",""],["144","The Bell Tolls","Dispatch Quest","1200 Gil","days:10","---","Desert Patrol (#017)","No","---","---","---","9000 Gil","50 AP","0 CP","Dictionary","--Type 6 Random Item--","---","---","---","10","80","10","10","---","---","10","---",""],["145","Goblin Town","Dispatch Quest","400 Gil","battles:1","---","Desert Peril (#004)","No","Mythril Pick","---","---","3600 Gil","50 AP","0 CP","Monster Guide","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","60","10","10","---","10","60","---","10","---",""],["146","Secret Books","Dispatch Quest","1600 Gil","days:10","---","To Ambervale (#022)","No","Stilpool Scroll","---","---","11400 Gil","50 AP","0 CP","Secret Books","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","20","---","20","80","20","---","---","---",""],["147","Words Of Love","Dispatch Quest","1400 Gil","days:10","---","Quiet Sands (#018)","No","---","---","---","10000 Gil","50 AP","0 CP","Rat Tail","--Type 6 Random Item--","---","---","---","10","---","10","80","10","10","---","---",""],["148","You, Immortal","Dispatch Quest","600 Gil","days:30","---","Twisted Flow (#005)","No","Tonberry Lamp","---","Crf 10","4600 Gil","80 AP","0 CP","Stradivari","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","60","60","10","10","10","---","---",""],["149","Clocktower","Dispatch Quest","1600 Gil","days:20","---","The Big Find (#016)","No","Cat's Tears","---","Gadgeteer","11400 Gil","70 AP","0 CP","Clock Post","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","60","---","60","---","60","---","60","---","---",""],["150","An Education","Dispatch Quest","400 Gil","days:5","---","Antilaws (#006)","No","---","---","---","3600 Gil","30 AP","0 CP","Fountain Pen","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","80","---","---","10","10","10","10","---",""],["151","Morning Woes","Dispatch Quest","600 Gil","days:5","---","Hot Awakening (#008)","No","---","---","---","5200 Gil","30 AP","0 CP","Earplugs","--Type 3 Random Item--","---","---","---","10","---","80","10","10","---","---","---",""],["152","Down To Earth","Dispatch Quest","400 Gil","days:5","---","Desert Peril (#004)","No","---","---","---","3400 Gil","30 AP","0 CP","Crystal","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","60","10","10","10","---","10","60","---",""],["153","To Meden","Dispatch Quest","1000 Gil","days:20","---","Scouring Time (#015)","No","Animal Bone","---","---","8200 Gil","70 AP","0 CP","Old Statue","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","80","10","---","10","---","---",""],["154","Neighbor!","Dispatch Quest","600 Gil","days:5","---","Emerald Keep (#010)","No","---","---","---","5200 Gil","30 AP","0 CP","Neighbor Pin","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","10","---","80","10","---",""],["155","Honor Lost","Dispatch Quest","800 Gil","battles:1","---","Diamond Rain (#007)","No","Bomb Shell","---","---","5400 Gil","50 AP","0 CP","Rusty Sword","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","100","10","10","10","---","---","10","---","---",""],["156","Inspiration","Dispatch Quest","1400 Gil","battles:1","---","Jagd Hunt (#012)","No","Runba's Tale","---","---","10000 Gil","50 AP","0 CP","Broken Sword","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","100","---","---","---","---",""],["157","Coo's Break","Dispatch Quest","1400 Gil","days:5","---","The Bounty (#013)","No","Runba's Tale","---","---","10000 Gil","30 AP","0 CP","Bent Sword","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","20","---","100","20","---","20","20","---","---",""],["158","The Match","Dispatch Quest","1200 Gil","battles:2","---","Scouring Time (#015)","No","---","---","---","8800 Gil","70 AP","0 CP","Rusty Spear","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","80","10","---","10","---",""],["159","The Deep Sea","Dispatch Quest","1600 Gil","battles:3","---","Materite Now! (#019)","No","---","---","---","11400 Gil","80 AP","0 CP","Feather Badge","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","80","10","---","10","---",""],["160","A Worthy Eye","Dispatch Quest","3000 Gil","enemies:15","---","Pale Company (#011)","No","Feather Badge","Delta Fang","---","0 Gil","80 AP","0 CP","Insignia","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","80","---","---","10","---",""],["161","Lost In Mist","Dispatch Quest","1400 Gil","days:20","---","Desert Patrol (#017)","No","---","---","---","10000 Gil","70 AP","0 CP","Ally Finder","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","---","---","---","80","---",""],["162","Darn Kids","Dispatch Quest","1600 Gil","battles:1","---","Magic Wood (#009)","No","Dame's Blush","Ally Finder","Smt 20","11400 Gil","50 AP","0 CP","Ally Finder2","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","10","100","---","10","10","---","---","---",""],["163","Stage Fright","Dispatch Quest","1400 Gil","days:15","---","Quiet Sands (#018)","No","Old Statue","---","---","10600 Gil","50 AP","0 CP","Tranquil Box","--Type 6 Random Item--","---","---","---","---","10","80","10","---","---","10","---",""],["164","Diary Dilemma","Dispatch Quest","400 Gil","battles:2","---","Twisted Flow (#005)","No","---","---","---","3600 Gil","70 AP","0 CP","Loaded Dice","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","60","---","10","10","---","---","10","10","---",""],["165","Hundred-Eye","Dispatch Quest","1200 Gil","enemies:5","---","Scouring Time (#015), Wine Delivery (#126)","No","---","---","---","9000 Gil","50 AP","0 CP","Snake Shield","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","10","---","---","80","Finish ANY mission successfully with the mission item Snake Shield to recruit Cheney",""],["166","Runaway Boy","Dispatch Quest","800 Gil","days:10","---","Magic Wood (#009)","No","Black Thread","---","---","5400 Gil","50 AP","0 CP","Stasis Rope","--Type 3 Random Item--","---","---","---","10","---","80","10","---","10","---","---",""],["167","Mad Alchemist","Dispatch Quest","400 Gil","days:10","---","The Cheetahs (#003)","No","---","---","---","3400 Gil","50 AP","0 CP","Mythril Pick","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","110","10","80","10","---","---","---","---",""],["168","Caravan Guard","Dispatch Quest","600 Gil","days:20","---","Diamond Rain (#007)","No","Elda's Cup","---","---","4600 Gil","70 AP","0 CP","Caravan Musk","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","80","10","10","---","10","---",""],["169","Lifework","Dispatch Quest","800 Gil","days:15","---","Emerald Keep (#010)","No","---","---","Alchemist","6000 Gil","50 AP","0 CP","Love Potion","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","80","10","10","10","---","10","---","---",""],["170","Cheap Laughs","Dispatch Quest","600 Gil","days:5","---","Hot Awakening (#008)","No","Bomb Shell","---","---","4600 Gil","30 AP","0 CP","Tonberry Lamp","--Type 3 Random Item--","---","---","---","---","80","10","10","---","---","10","---",""],["171","T.L.C.","Dispatch Quest","4000 Gil","battles:2","---","Desert Patrol (#017)","No","---","---","Mag 25, White Mage","7600 Gil","70 AP","0 CP","Stilpool Scroll","--Type 4 Random Item--","---","---","---","80","10","---","---","10","---","---","---",""],["172","Frozen Spring","Dispatch Quest","400 Gil","days:20","---","Twisted Flow (#005)","No","---","---","---","3400 Gil","70 AP","0 CP","Dragon Bone","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","---","10","10","---","60","---",""],["173","No Scents","Dispatch Quest","600 Gil","days:15","---","Magic Wood (#009)","No","Caravan Musk","---","---","5200 Gil","50 AP","0 CP","Animal Bone","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","80","---","10","10","---",""],["174","On The Waves","Dispatch Quest","1800 Gil","enemies:5","---","To Ambervale (#022)","No","Life Water","---","Time Mage","13200 Gil","50 AP","0 CP","Skull","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","20","---","20","80","20","---","20","20","---",""],["175","Spirited Boy","Dispatch Quest","800 Gil","days:5","---","Antilaws (#006)","No","Dictionary","---","---","6400 Gil","30 AP","0 CP","Clock Gear","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","---","10","---","10","---",""],["176","Powder Worries","Dispatch Quest","800 Gil","enemies:10","---","Emerald Keep (#010), Lost Heirloom (#140)","No","---","---","---","5400 Gil","70 AP","0 CP","Gun Gear","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","---","10","10","80","---",""],["177","The Blue Bolt","Dispatch Quest","1200 Gil","enemies:15","---","Quiet Sands (#018)","No","---","---","---","9000 Gil","80 AP","0 CP","Silk Bloom","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","---","---","80","10","10","---",""],["178","Sweet Talk","Dispatch Quest","1000 Gil","enemies:10","---","The Bounty (#013)","No","---","---","---","7000 Gil","70 AP","0 CP","Moon Bloom","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","---","80","10","10","---",""],["179","Scarface","Dispatch Quest","1200 Gil","battles:3","---","Scouring Time (#015)","No","---","---","---","9000 Gil","80 AP","0 CP","Blood Apple","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","80","---","---","10","10","10","---","---",""],["180","Mirage Town","Dispatch Quest","1600 Gil","days:10","---","Quiet Sands (#018)","No","Goldcap","---","---","11400 Gil","50 AP","0 CP","Magic Fruit","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","10","100","---","---","---",""],["181","Soldier's Wish","Dispatch Quest","1400 Gil","battles:1","---","The Big Find (#016)","No","Clock Gear","Clock Post","---","10600 Gil","50 AP","0 CP","Power Fruit","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","60","---","60","---","60","---","60","---",""],["182","Dry Spell","Dispatch Quest","1200 Gil","days:20","---","Quiet Sands (#018)","No","---","---","---","9600 Gil","70 AP","0 CP","Stolen Gil","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","80","10","10","10","10","---",""],["183","Swap Meet","Dispatch Quest","200 Gil","days:5","---","Present Day (#020)","No","Ancient Medal","---","---","1200 Gil","30 AP","0 CP","Ancient Bills","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","80","---","10","---","---",""],["184","Adaman Order","Dispatch Quest","3000 Gil","days:15","---","Clear Game, Free Bervenia! (#087)","No","Adamantite","Adamantite","Smt 35","0 Gil","50 AP","0 CP","Adaman Alloy","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","80","30","30","30","30","30","---",""],["185","Magic Mysidia","Dispatch Quest","3000 Gil","battles:2","---","Clear Game, Adaman Order (#184)","No","Adamantite","Silvril","Smt 35","0 Gil","70 AP","0 CP","Mysidia Alloy","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","80","30","30","30","30","30","---",""],["186","Conundrum","Dispatch Quest","3000 Gil","enemies:10","---","Clear Game","No","Zodiac Ore","Zodiac Ore","Smt 35","0 Gil","70 AP","0 CP","Crusite Alloy","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","80","30","30","30","30","30","---",""],["187","Lucky Night","Dispatch Quest","2400 Gil","days:15","---","Clear Game","No","---","---","---","18000 Gil","50 AP","0 CP","Rat Tail","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","30","---","---","---","---","80","---",""],["188","Tutor Search","Dispatch Quest","1600 Gil","enemies:15","---","Clear Game, Lucky Night (#187)","No","---","---","---","11400 Gil","80 AP","0 CP","Rusty Sword","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","30","---","---","80","---","---","---",""],["189","Why Am I Wet?","Dispatch Quest","1800 Gil","enemies:15","---","Clear Game, Lucky Night (#187)","No","---","---","Red Mage","13600 Gil","80 AP","0 CP","Broken Sword","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","---","30","30","30","---","80","---","---",""],["190","Run With Us","Dispatch Quest","2400 Gil","days:40","---","Clear Game, Why Am I Wet? (#189)","No","---","---","---","18000 Gil","80 AP","0 CP","Bent Sword","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","30","---","80","---","30","30","30","---",""],["191","Lucky Charm","Dispatch Quest","1200 Gil","days:40","---","Clear Game, Why Am I Wet? (#189)","No","Rat Tail","---","---","9000 Gil","80 AP","0 CP","Rusty Spear","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","80","30","---","30","---","30","30","---",""],["192","Alchemist Boy","Dispatch Quest","600 Gil","battles:2","---","Clear Game, Lucky Charm (#191)","No","---","---","---","4600 Gil","70 AP","0 CP","Insignia","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","---","30","80","30","---","---","---",""],["193","Thorny Dreams","Dispatch Quest","2200 Gil","days:20","---","Clear Game, Lucky Night (#187)","No","---","---","---","16000 Gil","70 AP","0 CP","Blood Apple","--Type 7 Random Item--","---","---","---","---","---","---","---","---","---","80","---",""],["194","Free Cyril!","Dispatch Quest","400 Gil","days:3","---","Thesis Hunt (#002), Read Thief Exposed","No","---","---","---","2400 Gil","30 AP","0 CP","Choco Shield","--Type 1 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","10","---","10","---","---",""],["195","Ship Needed","Dispatch Quest","600 Gil","battles:1","---","Antilaws (#006), Read Borzoi's End","No","---","---","---","4200 Gil","50 AP","0 CP","--Type 2 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","---","10","---","80","10","---",""],["196","Mind Ceffyl","Dispatch Quest","4000 Gil","battles:3","---","Jagd Hunt (#012), Read The Sages","60 days","Fire Sigil","Wind Sigil","---","0 Gil","80 AP","0 CP","Mind Ceffyl","---","---","---","---","80","---","---","---","---","---","---","---",""],["197","Body Ceffyl","Dispatch Quest","4000 Gil","battles:3","---","Jagd Hunt (#012), Read The Sages","60 days","Earth Sigil","Water Sigil","---","0 Gil","80 AP","0 CP","Body Ceffyl","---","---","---","---","80","---","---","---","---","---","---","---",""],["198","The Spiritstone","Dispatch Quest","4000 Gil","battles:4","---","Jagd Hunt (#012), Read The Sages","60 days","Mind Ceffyl","Body Ceffyl","---","0 Gil","90 AP","0 CP","Spiritstone","---","---","---","20","80","20","20","20","20","20","20","---",""],["199","Girl In Love","Dispatch Quest","400 Gil","battles:2","---","Thesis Hunt (#002)","No","White Thread","---","White Mage","3400 Gil","50 AP","0 CP","Magic Medal","--Type 1 Random Item--","---","---","---","60","10","---","---","10","60","---","---",""],["200","Chocobo Help!","Dispatch Quest","200 Gil","days:5","---","Thesis Hunt (#002)","20 days","---","---","---","1000 Gil","20 AP","0 CP","Chocobo Egg","--Type 1 Random Item--","---","---","---","---","10","---","---","60","60","10","---",""],["201","The Skypole","Dispatch Quest","400 Gil","days:10","---","Thesis Hunt (#002)","No","---","---","---","2400 Gil","50 AP","0 CP","Ancient Medal","--Type 1 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","10","10","---","---","80","---",""],["202","Ruins Survey","Dispatch Quest","1400 Gil","days:10","---","Materite Now! (#019)","20 days","---","---","---","10800 Gil","30 AP","0 CP","Ancient Medal","--Type 4 Random Item--","--Random Law Card--","---","---","---","10","80","10","---","---","10","---",""],["203","Dig Dig Dig","Dispatch Quest","1600 Gil","battles:1","---","Present Day (#020)","20 days","---","---","---","11800 Gil","50 AP","0 CP","Zodiac Ore","--Type 5 Random Item--","--Random Law Card--","---","---","10","80","---","10","10","10","---","---",""],["204","Seeking Silver","Dispatch Quest","400 Gil","days:15","---","Jagd Hunt (#012)","20 days","---","---","---","3400 Gil","30 AP","0 CP","Silvril","--Type 2 Random Item--","---","---","---","---","10","10","---","100","10","---","---",""],["205","Materite","Dispatch Quest","1000 Gil","days:10","---","Twisted Flow (#005)","20 days","---","---","---","0 Gil","30 AP","0 CP","Materite","--Type 1 Random Item--","--Random Law Card--","---","---","10","---","10","---","80","---","10","---",""],["206","The Wormhole","Dispatch Quest","400 Gil","days:10","---","Emerald Keep (#010), You, Immortal (#148)","20 days","---","---","---","2800 Gil","30 AP","0 CP","Leestone","--Type 2 Random Item--","--Random Law Card--","---","80","10","10","10","---","---","---","10","---",""],["207","Metal Hunt","Dispatch Quest","400 Gil","days:15","---","Antilaws (#006), Hungry Ghost (#123)","20 days","---","---","---","2400 Gil","30 AP","0 CP","Adamantite","--Type 2 Random Item--","--Random Law Card--","---","---","---","80","---","---","10","10","10","---",""],["208","Math Is Hard","Dispatch Quest","600 Gil","days:10","---","Diamond Rain (#007)","No","---","---","---","4200 Gil","50 AP","0 CP","Black Thread","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","80","10","10","10","---","10","---","---",""],["209","The Witness","Dispatch Quest","600 Gil","enemies:5","---","Diamond Rain (#007)","No","---","---","Defender","4600 Gil","50 AP","0 CP","Black Thread","--Type 3 Random Item--","---","---","---","10","10","10","10","---","---","80","---",""],["210","Life Or Death","Dispatch Quest","400 Gil","battles:1","---","The Cheetahs (#003)","No","Homework","---","---","2400 Gil","50 AP","0 CP","Black Thread","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","---","---","10","80","10","---",""],["211","Karlos's Day","Dispatch Quest","600 Gil","days:5","---","Magic Wood (#009)","No","---","---","---","4600 Gil","30 AP","0 CP","White Thread","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","10","10","10","80","---",""],["212","To Father","Dispatch Quest","1600 Gil","days:10","---","Magic Wood (#009), The Performer (#270)","No","---","---","---","11400 Gil","50 AP","0 CP","White Thread","--Type 7 Random Item--","---","---","---","10","---","80","10","10","---","10","---",""],["213","Oh Milese","Dispatch Quest","400 Gil","days:15","---","Desert Peril (#004)","No","---","---","---","2800 Gil","50 AP","0 CP","White Thread","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","---","---","10","---","80","---",""],["214","Skinning Time","Dispatch Quest","400 Gil","days:10","---","Pale Company (#011)","20 days","---","---","---","3600 Gil","30 AP","0 CP","Chocobo Skin","---","--Random Law Card--","---","---","10","80","---","10","---","10","---","---",""],["215","Wild River","Dispatch Quest","800 Gil","battles:2","---","Pale Company (#011)","No","---","---","---","5400 Gil","70 AP","0 CP","Magic Cloth","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","80","10","10","---","10","---","10","---",""],["216","Magic Cloth","Dispatch Quest","1400 Gil","days:10","---","Hot Awakening (#008)","20 days","Magic Cotton","---","---","0 Gil","30 AP","0 CP","Magic Cloth","--Type 3 Random Item--","--Random Law Card--","---","20","100","20","---","---","20","---","20","---",""],["217","Cotton Guard","Dispatch Quest","1000 Gil","battles:1","---","The Bounty (#013)","20 days","---","---","---","7000 Gil","50 AP","0 CP","Magic Cotton","---","--Random Law Card--","---","---","10","---","---","10","10","80","10","---",""],["218","Help Dad","Dispatch Quest","1000 Gil","days:10","---","The Bounty (#013)","No","---","---","---","7800 Gil","50 AP","0 CP","Bomb Shell","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","---","10","10","10","---",""],["219","Rubber or Real","Dispatch Quest","600 Gil","days:5","---","Emerald Keep (#010)","No","Monster Guide","---","---","5200 Gil","30 AP","0 CP","Bomb Shell","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","80","10","---","10","---",""],["220","Into The Wood","Dispatch Quest","600 Gil","days:5","---","Scouring Time (#015)","20 days","---","---","---","4600 Gil","20 AP","0 CP","Panther Hide","--Type 3 Random Item--","--Random Law Card--","---","---","10","---","10","---","10","80","10","---",""],["221","Jerky Days","Dispatch Quest","600 Gil","days:5","---","Scouring Time (#015)","20 days","---","---","---","4200 Gil","20 AP","0 CP","Jerky","---","--Random Law Card--","---","---","10","10","10","10","80","10","10","---",""],["222","New Fields","Dispatch Quest","400 Gil","days:10","---","Jagd Hunt (#012)","20 days","---","---","---","3600 Gil","40 AP","0 CP","Gysahl Greens","---","--Random Law Card--","---","---","10","10","10","10","80","10","10","---",""],["223","Strange Fires","Dispatch Quest","1200 Gil","days:5","---","The Big Find (#016)","No","---","---","---","9600 Gil","30 AP","0 CP","Magic Medal","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","80","---","10","10","10","---",""],["224","Better Living","Dispatch Quest","1400 Gil","days:10","---","The Big Find (#016)","No","---","---","---","10000 Gil","50 AP","0 CP","Chocobo Egg","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","---","80","10","10","---",""],["225","Malboro Hunt","Dispatch Quest","600 Gil","days:15","---","The Bounty (#013)","20 days","Chocobo Egg","---","---","4200 Gil","40 AP","0 CP","Cyril Ice","--Type 3 Random Item--","--Random Law Card--","---","---","---","10","10","10","---","---","80","---",""],["226","Chocobo Work","Dispatch Quest","600 Gil","days:10","---","Quiet Sands (#018)","20 days","---","---","---","4600 Gil","40 AP","0 CP","Choco Bread","--Type 4 Random Item--","--Random Law Card--","---","---","10","---","10","10","10","80","---","---",""],["227","Party Night","Dispatch Quest","1200 Gil","days:15","---","Quiet Sands (#018)","No","---","---","---","9600 Gil","50 AP","0 CP","Choco Gratin","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","80","---","10","10","---","10","---","---",""],["228","Mama's Taste","Dispatch Quest","1200 Gil","days:15","---","Scouring Time (#015)","No","Chocobo Egg","Gysahl Greens","---","9000 Gil","50 AP","0 CP","Choco Gratin","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","10","80","10","10","---",""],["229","The Well Maze","Dispatch Quest","1200 Gil","days:15","---","Materite Now! (#019)","No","Choco Bread","---","---","9600 Gil","50 AP","0 CP","Grownup Bread","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","10","---","10","10","80","---",""],["230","She's Gone","Dispatch Quest","1400 Gil","days:5","---","Materite Now! (#019), Bread Woes (#234)","No","---","---","---","10600 Gil","30 AP","0 CP","Malboro Wine","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","---","---","80","---","---",""],["231","Magic Vellum","Dispatch Quest","600 Gil","battles:1","---","Desert Patrol (#017)","20 days","Magic Cotton","---","---","4600 Gil","50 AP","0 CP","Magic Vellum","--Type 4 Random Item--","--Random Law Card--","---","---","---","10","80","---","10","10","---","---",""],["232","Novel Ascent","Dispatch Quest","1600 Gil","enemies:10","---","Present Day (#020)","No","Stasis Rope","---","---","11400 Gil","70 AP","0 CP","Runba's Tale","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","80","---","10","10","---","10","10","---",""],["233","Shiver","Dispatch Quest","1600 Gil","days:20","---","Present Day (#020)","No","---","---","---","11800 Gil","70 AP","0 CP","Runba's Tale","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","80","10","10","---","---","---","10","---",""],["234","Bread Woes","Dispatch Quest","1400 Gil","days:20","---","Quiet Sands (#018)","20 days","Choco Bread","---","---","10800 Gil","70 AP","0 CP","Kiddy Bread","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","10","80","---","---","---",""],["235","Book Mess","Dispatch Quest","1600 Gil","days:10","---","Present Day (#020)","20 days","---","---","---","12400 Gil","40 AP","0 CP","Encyclopedia","---","--Random Law Card--","---","---","10","---","---","80","10","10","10","---",""],["236","One More Tail","Dispatch Quest","1400 Gil","days:10","---","Present Day (#020)","20 days","---","---","---","10800 Gil","40 AP","0 CP","Rabbit Tail","--Type 6 Random Item--","--Random Law Card--","---","---","---","10","10","10","---","---","80","---",""],["237","Relax Time!","Dispatch Quest","600 Gil","days:15","---","To Ambervale (#022)","20 days","---","---","---","4600 Gil","50 AP","0 CP","Danbukwood","---","--Random Law Card--","---","---","---","20","20","---","80","20","20","---",""],["238","Foma Jungle","Dispatch Quest","600 Gil","days:15","---","To Ambervale (#022)","20 days","---","---","---","4600 Gil","50 AP","0 CP","Moonwood","---","--Random Law Card--","---","20","20","---","80","20","20","---","---","---",""],["239","For A Flower","Dispatch Quest","800 Gil","battles:2","---","To Ambervale (#022)","20 days","---","---","---","6000 Gil","70 AP","0 CP","Telaq Flower","--Type 5 Random Item--","---","---","20","80","---","20","20","---","20","---","---",""],["240","Giza Plains","Dispatch Quest","400 Gil","enemies:3","---","Thesis Hunt (#002), Giza Plains not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 1 Random Item--","---","---","---","20","20","20","20","20","20","20","20","---",""],["241","Lutia Pass","Dispatch Quest","400 Gil","enemies:3","---","Desert Peril (#004), Lutia Pass not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 1 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["242","The Nubswood","Dispatch Quest","400 Gil","enemies:3","---","Antilaws (#006), Nubswood not Freed, Raven's Oath (#070)","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 2 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["243","Eluut Sands","Dispatch Quest","400 Gil","enemies:3","---","Diamond Rain (#007), Eluut Sands not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 2 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["244","Ulei River","Dispatch Quest","400 Gil","enemies:3","---","Hot Awakening (#008), Ulei River not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 3 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["245","Aisenfield","Dispatch Quest","400 Gil","enemies:3","---","Magic Wood (#009), Aisenfield not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 3 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["246","Roda Volcano","Dispatch Quest","400 Gil","enemies:3","---","Emerald Keep (#010), Roda Volcano not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 3 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["247","Travel Aid","Dispatch Quest","400 Gil","enemies:5","---","Pale Company (#011), Koringwood not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 4 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["248","The Salikawood","Dispatch Quest","400 Gil","enemies:5","---","Jagd Hunt (#012), Salikawood not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 4 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["249","Nargai Cave","Dispatch Quest","400 Gil","enemies:5","---","The Bounty (#013), Nargai Cave not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["250","Kudik Peaks","Dispatch Quest","400 Gil","enemies:5","---","Scouring Time (#015), Kudik Peaks not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["251","Jeraw Sands","Dispatch Quest","400 Gil","enemies:5","---","Scouring Time (#015), Jeraw Sands not Freed","Yes","---","---","---","2400 Gil","50 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["252","Uladon Bog","Dispatch Quest","400 Gil","enemies:7","---","Scouring Time (#015), Uladon Bog not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["253","Gotor Sands","Dispatch Quest","400 Gil","enemies:7","---","The Big Find (#016), Gotor Sands not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 4 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["254","Delia Dunes","Dispatch Quest","400 Gil","enemies:7","---","Desert Patrol (#017), Delia Dunes not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 6 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["255","Bugbusters","Dispatch Quest","400 Gil","enemies:7","---","Quiet Sands (#018), Materiwood not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 6 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["256","Tubola Cave","Dispatch Quest","400 Gil","enemies:7","---","Present Day (#020), Tubola Cave not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 7 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["257","Deti Plains","Dispatch Quest","400 Gil","enemies:10","---","To Ambervale (#022), Deti Plains not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 7 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["258","Siena Gorge","Dispatch Quest","400 Gil","enemies:10","---","To Ambervale (#022), Siena Gorge not Freed","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 7 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["259","Jagd Ahli","Dispatch Quest","400 Gil","enemies:15","---","Clear Game, Jagd Ahli not Freed, Exploration (#065)","Yes","---","---","---","2400 Gil","80 AP","20 CP","--Type 6 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["260","Jagd Helje","Dispatch Quest","400 Gil","enemies:15","---","Clear Game, Jagd Helje not Freed, Den of Evil (#064)","Yes","---","---","---","2400 Gil","80 AP","20 CP","--Type 5 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["261","Jagd Dorsa","Dispatch Quest","400 Gil","enemies:15","---","Clear Game, Jagd Dorsa not Freed, Seen 24 05","Yes","---","---","---","2400 Gil","80 AP","20 CP","--Type 7 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["262","Ambervale","Dispatch Quest","400 Gil","enemies:7","---","Clear Game, Ambervale not Freed, Ozmonfield (#263)","No","---","---","---","2400 Gil","70 AP","20 CP","--Type 6 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["263","Ozmonfield","Dispatch Quest","400 Gil","enemies:7","---","Clear Game, Ozmonfield not Freed, A Dragon's Aid (#066)","Yes","---","---","---","2400 Gil","70 AP","20 CP","--Type 7 Random Item--","---","--Random Law Card--","---","20","20","20","20","20","20","20","20","---",""],["264","Swords In Cyril","Dispatch Quest","200 Gil","battles:1","---","Thesis Hunt (#002)","20 days","---","---","Fencer","1800 Gil","50 AP","20 CP","Victor Sword","--Type 1 Random Item--","---","---","50","---","60","10","10","---","10","---","---",""],["265","Newbie Hall","Dispatch Quest","400 Gil","days:10","---","The Cheetahs (#003), Earthy Colors (#139)","No","---","---","Com 5","2400 Gil","50 AP","0 CP","Onion Sword","--Type 2 Random Item--","---","---","50","---","60","10","---","10","10","10","---",""],["266","Voodoo Doll","Dispatch Quest","400 Gil","days:5","---","Twisted Flow (#005)","No","---","---","---","3400 Gil","30 AP","0 CP","Soul Saber","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","60","---","10","60","10","20","---","---",""],["267","Come On Out","Dispatch Quest","800 Gil","days:10","---","Antilaws (#006)","No","Jerky","---","---","5400 Gil","50 AP","0 CP","Oblige","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","10","---","80","10","---","---",""],["268","Food For Truth","Dispatch Quest","800 Gil","days:20","---","Diamond Rain (#007), The Witness (#209)","No","Choco Gratin","---","App 18","6400 Gil","70 AP","0 CP","Rhomphaia","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","100","10","10","10","---",""],["269","Alba Cave","Dispatch Quest","800 Gil","battles:4","---","Hot Awakening (#008)","No","Jerky","---","Blue Mage","6000 Gil","90 AP","0 CP","Beastsword","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","20","---","20","20","100","20","---","---",""],["270","The Performer","Dispatch Quest","1200 Gil","days:15","---","Magic Wood (#009)","No","Rabbit Tail","---","---","9600 Gil","50 AP","0 CP","Tonberrian","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","---","100","10","10","---","---",""],["271","One More Time","Dispatch Quest","800 Gil","days:15","---","Pale Company (#011)","No","---","---","---","6400 Gil","50 AP","0 CP","Aerial Hole","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","10","---","80","10","---",""],["272","Spring Tree","Dispatch Quest","1000 Gil","battles:2","---","Jagd Hunt (#012)","No","---","---","---","7000 Gil","70 AP","0 CP","Charfire","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","10","80","10","10","---",""],["273","Who Am I?","Dispatch Quest","200 Gil","days:15","---","The Bounty (#013), Adaman Alloy (#131)","No","Magic Medal","Magic Medal","---","600 Gil","50 AP","0 CP","Power Staff","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","20","20","---","20","100","---","20","---",""],["274","Reaper Rumors","Dispatch Quest","1200 Gil","days:10","---","Scouring Time (#015)","No","---","---","---","8800 Gil","50 AP","0 CP","Crescent Bow","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","---","10","---","10","80","---",""],["275","Dog Days","Dispatch Quest","1200 Gil","days:10","---","The Big Find (#016)","No","---","---","---","8800 Gil","50 AP","0 CP","Marduk Bow","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","80","---","---","10","---",""],["276","Good Bread","Dispatch Quest","1000 Gil","days:5","---","Desert Patrol (#017)","No","Grownup Bread","Kiddy Bread","---","0 Gil","30 AP","0 CP","Arbalest","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","20","20","100","20","20","20","20","20","---",""],["277","Sword Needed","Dispatch Quest","1200 Gil","battles:2","---","Quiet Sands (#018)","No","---","---","---","9000 Gil","70 AP","0 CP","Bangaa Spike","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","---","10","10","10","10","---",""],["278","El Ritmo","Dispatch Quest","1600 Gil","enemies:10","---","Quiet Sands (#018)","No","Moonwood","Danbukwood","---","12400 Gil","70 AP","0 CP","Fell Castanets","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","80","---","10","---","10","---",""],["279","Her Big Move","Dispatch Quest","1200 Gil","days:7","---","Materite Now! (#019)","No","Malboro Wine","---","---","9600 Gil","40 AP","0 CP","Magic Hands","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","10","80","10","---","---",""],["280","Don't Look!","Dispatch Quest","1400 Gil","enemies:10","---","Materite Now! (#019)","No","---","---","---","10800 Gil","70 AP","0 CP","Reverie Shield","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","---","80","10","---","10","---",""],["281","Janitor Duty","Dispatch Quest","1600 Gil","days:20","---","Present Day (#020)","No","---","---","---","11400 Gil","70 AP","0 CP","Parade Helm","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","10","---","10","10","80","---",""],["282","Unlucky Star","Dispatch Quest","1800 Gil","enemies:3","---","Present Day (#020)","No","Blood Shawl","---","---","13200 Gil","50 AP","0 CP","Magic Robe","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","80","10","---","---","10","---",""],["283","Corral Care","Dispatch Quest","1600 Gil","days:10","---","To Ambervale (#022)","No","Choco Gratin","---","---","12600 Gil","50 AP","0 CP","Fire Mitts","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","20","---","20","---","20","80","---","20","---",""],["284","Beastly Gun","Dispatch Quest","200 Gil","days:10","---","Clear Game, Completed C8","No","Insignia","Ally Finder2","Gunner","0 Gil","50 AP","0 CP","Calling Gun","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","30","30","80","30","30","30","30","30","---",""],["285","Blade & Turtle","Dispatch Quest","1400 Gil","battles:2","---","Materite Now! (#019), She's Gone (#230)","No","Adaman Alloy","Broken Sword","Gladiator","10600 Gil","70 AP","0 CP","Adaman Blade","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","10","---","10","10","---","---",""],["286","Valuable Fake","Dispatch Quest","1200 Gil","days:10","---","Diamond Rain (#007), Run For Fun (#122)","No","Bent Sword","Rainbowite","---","4500 Gil","50 AP","0 CP","Nagrarok","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","100","10","10","---","---","10","---",""],["287","Weaver's War","Dispatch Quest","1400 Gil","enemies:5","---","Pale Company (#011)","No","Crusite Alloy","Blood Apple","---","10600 Gil","50 AP","0 CP","Zankplus","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","10","100","---","---","10","10","---","---",""],["288","Fabled Sword","Dispatch Quest","1600 Gil","battles:3","---","Present Day (#020), Novel Ascent (#232)","No","Thunderstone","Stormstone","Soldier","12600 Gil","80 AP","0 CP","Master Sword","--Type 7 Random Item--","---","---","---","10","10","---","80","10","---","---","---",""],["289","Refurbishing","Dispatch Quest","4000 Gil","days:20","---","Desert Peril (#004), Oh Milese (#213)","No","Broken Sword","---","---","0 Gil","70 AP","0 CP","Lurebreaker","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","50","50","50","---","10","10","---",""],["290","Stone Secret","Dispatch Quest","4200 Gil","battles:3","---","To Ambervale (#022)","No","Rusty Sword","Leestone","---","0 Gil","80 AP","0 CP","Tabarise","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","20","80","20","---","20","20","---","---",""],["291","Sword Stuff","Dispatch Quest","4800 Gil","battles:4","---","Present Day (#020), Sorry, Friend (#094)","No","Silk Bloom","Moon Bloom","---","0 Gil","90 AP","0 CP","Silkmoon","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","10","---","10","10","---","---",""],["292","A Stormy Night","Dispatch Quest","1600 Gil","battles:4","---","To Ambervale (#022), Ghosts Of War (#142)","No","Rusty Spear","Mysidia Alloy","---","12600 Gil","90 AP","0 CP","Odin Lance","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","20","---","80","---","---","20","20","20","---",""],["293","Minstrel Song","Dispatch Quest","6000 Gil","battles:3","---","Materite Now! (#019)","No","Stradivari","Black Thread","---","0 Gil","80 AP","0 CP","Dark Fiddle","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","80","10","10","10","---","---","---",""],["294","Gun Crazy","Dispatch Quest","4400 Gil","battles:3","---","Present Day (#020), Sword Stuff (#291)","No","Crusite Alloy","Gun Gear","---","0 Gil","80 AP","0 CP","Bindsnipe","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","10","80","10","10","---","---",""],["295","Black Hat","Dispatch Quest","2400 Gil","battles:3","---","Quiet Sands (#018)","No","Black Thread","Magic Cloth","Black Mage","0 Gil","80 AP","0 CP","Black Hat","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","10","80","---","---","10","10","---",""],["296","Hat For A Girl","Dispatch Quest","1400 Gil","days:30","---","Present Day (#020)","No","White Thread","Magic Cloth","---","10800 Gil","80 AP","0 CP","White Hat","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","10","---","---","10","---",""],["297","Armor & Turtle","Dispatch Quest","1200 Gil","battles:2","---","Scouring Time (#015), Mama's Taste (#228)","No","Adaman Alloy","Rat Tail","---","9000 Gil","70 AP","0 CP","Adaman Armor","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","100","---","---","20","---","---","---",""],["298","Dark Armor","Dispatch Quest","3000 Gil","enemies:10","---","The Big Find (#016), Dog Days (#275)","No","Materite","Materite","---","0 Gil","70 AP","0 CP","Materia Armor","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","10","80","10","10","---","---","---","---",""],["299","Fashion World","Dispatch Quest","600 Gil","days:10","---","Antilaws (#006), An Education (#150)","No","Chocobo Skin","Magic Cotton","---","4600 Gil","50 AP","0 CP","Brint Set","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","10","10","10","80","---","---","---","---",""],["300","Fashion Hoopla","Dispatch Quest","1600 Gil","days:5","---","Magic Wood (#009), The Performer (#270)","No","Chocobo Skin","Magic Cotton","---","11800 Gil","30 AP","0 CP","Galmia Set","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","10","---","80","10","10","---","10","---",""],["Rec-1","Human Wanted","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Human",""],["Rec-2","Bangaa Wanted","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Bangaa",""],["Rec-3","Nu Mou Wanted","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Nu Mou",""],["Rec-4","Viera Wanted","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Viera",""],["Rec-5","Moogle Wanted","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Moogle",""],["Rec-6","Human Help?","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc not in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Human",""],["Rec-7","Bangaa Help?","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc not in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Bangaa",""],["Rec-8","Nu Mou Help?","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc not in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Nu Mou",""],["Rec-9","Viera Help?","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc not in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Viera",""],["Rec-10","Moogle Help?","Recruitment Missions","200 Gil","days:5","---","5 or Less Units in Team, Montblanc not in team","10 days","---","---","---","0 Gil","20 AP","0 CP","---","---","---","---","---","---","---","---","---","---","40","---","Moogle",""],["Add-1","Reconcilliation","Additional Missions","4000 Gil","Win battle","Forever, Koringwood","To Ambervale (#022), Seen Ezel The Negotiator Cutscene","No","---","---","---","12000 Gil","40 AP","0 CP","---","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","*Ezel*",""],["Add-2","Left Behind","Additional Missions","4000 Gil","days:10","---","Clear Game","No","---","---","---","8000 Gil","30 AP","0 CP","---","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Add-3","With Babus","Additional Missions","4000 Gil","Win battle","Forever, Ambervale","Clear Game","No","---","---","---","8000 Gil","40 AP","0 CP","Stuffed Bear","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","*Babus*",""],["Add-4","Mortal Snow","Additional Missions","4000 Gil","Win battle","Forever, Lutia Pass","Clear Game, Old Friends (#107)","No","---","---","---","8000 Gil","40 AP","0 CP","---","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","*Ritz*",""],["Add-5","A Maiden's Cry","Additional Missions","3000 Gil","days:10","---","Clear Game","20 days","---","---","---","6000 Gil","20 AP","0 CP","---","---","--Random Law Card--","---","---","---","---","---","---","---","---","---","---",""],["Add-6","Memories","Additional Missions","4000 Gil","Win battle","Forever, Ambervale","Clear Game, With Babus (#Add-3)","20 days","Stuffed Bear [UNUSED]","---","---","0 Gil","0 AP","0 CP","---","---","---","---","---","---","---","---","---","---","---","---","---",""],["Add-7","Bored!","Additional Missions","3000 Gil","days:5","---","To Ambervale (#22), Reconcilliation (#Add-1)","20 days","---","---","---","0 Gil","20 AP","0 CP","---","---","--Random Law Card--","---","---","---","---","---","---","---","---","---","*Ezel*",""],["Add-8","Doned Here!","Additional Missions","3000 Gil","days:5","---","Clear Game, With Babus (#Add-3)","20 days","---","---","---","0 Gil","20 AP","0 CP","---","---","--Random Law Card--","---","---","---","---","---","---","---","---","---","*Babus*",""],["Add-9","Ritz's Offer","Additional Missions","3000 Gil","days:5","---","Clear Game, Mortal Snow (#Add-4)","20 days","---","---","---","0 Gil","20 AP","0 CP","---","---","--Random Law Card--","---","---","---","---","---","---","---","---","---","*Ritz*",""],["Add-10","Cid's Mission","Additional Missions","3000 Gil","days:5","---","Clear Game, Cleanup Time (#Judge-1)","20 days","---","---","---","0 Gil","20 AP","0 CP","---","---","--Random Law Card--","---","---","---","---","---","---","---","---","---","*Cid*",""],["Judge-1","Cleanup Time","The Corrupt Judges","3000 Gil","Win battle","Forever, Cadoan","Clear Game, Seen Corrupt Judges Rumor Cutscene","No","---","---","---","6000 Gil","40 AP","0 CP","---","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","*Cid*",""],["Judge-2","No Arms Rule","The Corrupt Judges","4000 Gil","Win battle","Forever, Giza Plains","Clear Game, Cleanup Time (#Judge-1)","No","---","---","---","6000 Gil","50 AP","0 CP","---","---","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-3","Kissing Rule","The Corrupt Judges","4000 Gil","Win battle","Forever, Nubswood","Clear Game, No Arms Rule (#Judge-2)","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 1 Random Item--","--Type 2 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-4","Immunity Pass","The Corrupt Judges","4000 Gil","Win battle","Forever, Cyril","Clear Game, Seen Corrupt Judge Mike Cutscene","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 2 Random Item--","--Type 3 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-5","No Full HP","The Corrupt Judges","4000 Gil","Win battle","Forever, Aisenfield","Clear Game, Immunity Pass (#Judge-4)","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 3 Random Item--","--Type 4 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-6","No Literacy","The Corrupt Judges","4000 Gil","Win battle","Forever, Uladon Bog","Clear Game, No Full HP (#Judge-5)","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 4 Random Item--","--Type 5 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-7","Favoritism","The Corrupt Judges","4000 Gil","Win battle","Forever, Baguba Port","Clear Game, Seen Corrupt Judge Reinhold Cutscene","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 5 Random Item--","--Type 6 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-8","No Answers","The Corrupt Judges","4000 Gil","Win battle","Forever, Muscadet","Clear Game, Favoritism (#Judge-7)","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 6 Random Item--","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-9","No Jumping","The Corrupt Judges","4000 Gil","Win battle","Forever, Roda Volcano","Clear Game, No Answers (#Judge-8)","No","---","---","---","6000 Gil","50 AP","0 CP","--Type 7 Random Item--","--Type 7 Random Item--","--Random Law Card--","--Random Law Card--","---","---","---","---","---","---","---","---","---",""],["Judge-10","Decision Time","The Corrupt Judges","4000 Gil","Win battle","Forever, Sprohm","Clear Game, Seen Cid Announces Resignation Cutscene","No","---","---","---","0 Gil","0 AP","0 CP","---","---","---","---","---","---","---","---","---","---","---","---","---",""],["League-1","Yellow Powerz","Clan League Missions","400 Gil","Win battle","25 days, Clan Encounter (Sprohm)","To Ambervale (#022), Clan League not in progress","20 days","---","---","---","2400 Gil","20 AP","0 CP","--Type 7 Random Item--","---","Dmg2: Bangaa [Law]","---","50","---","---","---","---","---","---","---","Bangaa",""],["League-2","Blue Geniuses","Clan League Missions","400 Gil","Win battle","25 days, Clan Encounter (Cadoan)","To Ambervale (#022), Yellow Powerz (#League-1)","Yes","---","---","---","2400 Gil","20 AP","0 CP","--Type 6 Random Item--","---","Dmg2: Nu Mou [Law]","---","25","50","---","---","---","---","---","---","Nu Mou",""],["League-3","Brown Rabbits","Clan League Missions","400 Gil","Win battle","25 days, Clan Encounter (Muscadet)","To Ambervale (#022), Blue Geniuses (#League-2)","Yes","---","---","---","2400 Gil","20 AP","0 CP","--Type 5 Random Item--","---","Dmg2: Viera [Law]","---","25","---","50","---","---","---","---","---","Viera",""],["League-4","White Kupos","Clan League Missions","1000 Gil","Win battle","25 days, Clan Encounter (Baguba Port)","To Ambervale (#022), Brown Rabbits (#League-3)","Yes","---","---","---","7000 Gil","20 AP","0 CP","Badge","---","Dmg2: Moogle [Law]","---","25","---","---","---","---","---","50","---","Moogle",""]]}</script>
+  <script id="rnd"
+    type="application/json">{"1":["Burglar Sword","Atmos Blade","Barong","Falchion","Kris Knife","Silver Rapier","Ninja Knife","Pure Staff","Firewheel Rod","Thunder Rod","Char Bow","Conch Shell","Kaiser Knuckles","Ice Shield","Wizard Hat","Blaze Robe","Battle Boots","Javelin","Buster Sword","Fortune Ring"],"2":["Gale Sword","Flametongue","Shamshir","Ancient Sword","Samson Sword","Kukri","Djinn Flyssa","Kotetsu","Bless Staff","Sleet Rod","Terre Rod","Thorn Bow","Lava Spear","Black Quena","Cat Claws","Cross Helm","Diamond Armor","Thunder Robe","Spiked Boots","Magic Ring"],"3":["Blood Sword","Defender","Diamond Sword","Predator","Joyeuse","Kikuichimonji","Cure Staff","Force Rod","Morning Star","Artemis Bow","Twin Bow","Partisan","Survivor","Lost Gun","Flame Shield","Gold Hairpin","Opal Armor","Gaia Gear","Flurry Robe","Thief Armlets"],"4":["Restorer","Air Blade","Lohengrin","Hardedge","Rondell Dagger","Mage Masher","Heaven's Cloud","Snake Staff","Flame Rod","Mandragora","Yoichi Bow","Fey Bow","Fairy Harp","White Fangs","Peacemaker","Diamond Helm","Carabini Mail","Minerva Plate","White Robe","Red Boots"],"5":["Vitanova","SaveTheQueen","Vigilante","El Cid Sword","Zorlin Shape","Colichemarde","Petalchaser","Spring Staff","Thor Rod","Life Crosier","Target Bow","Hades Bow","Aona Flute","Godhand","Giot Gun","Thief Hat","Mirror Mail","Ninja Gear","Black Robe","Feather Boots"],"6":["Pearl Blade","Harpe","Arch Sword","Claymore","Sword Breaker","Gupti Aga","Nosada","Cheer Staff","Chill Rod","Lotus Mace","Perseus Bow","Nike Bow","Kain's Lance","Heal Chime","Tiger Fangs","Longbarrel","Dragon Mail","Mirage Vest","Light Robe","Germinas"],"7":["Venus Blade","Excalibur","Orichalcum","Epeprism","Masamune","Nirvana Staff","Stardust Rod","Scorpion Tail","Master Bow","Trident","Blood Strings","Death Claws","Outsider","Sacri Shield","Maximillian","Bone Plate","Fairy Shoes","Aegis Shield","Lordly Robe","Scarab"]}</script>
+  <script>
+    const EMB = JSON.parse(document.getElementById('d').textContent), LSK = 'ffta-quest-data-v1';
+    const sameCols = (a, b) => a.length === b.length && a.every((h, i) => h === b[i]);
+    function loadSaved() {
+      try {
+        const o = JSON.parse(localStorage.getItem(LSK));
+        if (!o || !Array.isArray(o.h) || !Array.isArray(o.r) || !o.r.length) return null;
+        let rows = o.r;
+        if (sameCols(o.h, EMB.h.slice(0, -1))) rows = rows.map(r => [...r, '']);   // older save without Note
+        else if (!sameCols(o.h, EMB.h)) return null;
+        if (rows.every(r => Array.isArray(r) && r.length === EMB.h.length)) return {h: EMB.h, r: rows};
+      } catch (e) { }
+      return null;
+    }
+    const SAVED = loadSaved(), D = SAVED || EMB, H = D.h, R = D.r, ix = {};
+    let usingSaved = !!SAVED;
+    function saveData() {try {localStorage.setItem(LSK, JSON.stringify({h: H, r: R})); return true} catch (e) {return false} }
+    H.forEach((h, i) => ix[h] = i);
+    const SKN = ['Com', 'Mag', 'Smt', 'Crf', 'App', 'Gth', 'Neg', 'Trk'], SK = SKN.map(s => 'Clan Skills (' + s + ')');
+    const num = v => {const m = /\d+/.exec(v); return m ? +m[0] : 0}, pad = n => String(n).padStart(3, '0');
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    // Quest ids are plain numbers (001..300) or text ids (Rec-1, Add-3, Judge-2, League-4)
+    const canon = x => /^\d+$/.test(x) ? String(+x) : x;
+    const lab = id => /^\d+$/.test(id) ? id.padStart(3, '0') : id;
+    // Quest links in Appears when are stored without the "Completed " prefix
+    const normReq = (t, names) => t.replace(/(^|, )Completed (.+?) \(#([^)]+)\)/g, (m, pre, name, id) => (names.get(canon(id.trim())) === name || !name.includes(', ')) ? `${pre}${name} (#${id})` : m);
+    {const nm = new Map(R.map(r => [canon(r[0].trim()), r[1]])); R.forEach(r => {r[6] = normReq(r[6], nm);});}
+    const Q = R.map((r, i) => {
+      const id = canon(r[0].trim());
+      const o = {r, id, n: /^\d+$/.test(id) ? +id : 1000 + i, name: r[1], cat: r[2], req: r[6]};
+      o.refs = [...r[6].matchAll(/\(#([^)]+)\)/g)].map(m => canon(m[1].trim()));
+      o.sk = SK.map(k => num(r[ix[k]])); o.skt = o.sk.reduce((a, b) => a + b, 0);
+      o.hay = (r.join(' | ') + ' | #' + lab(o.id)).toLowerCase(); return o
+    });
+    const byN = new Map(Q.map(q => [q.id, q]));
+    function refreshQ(q) {
+      const r = q.r;
+      q.name = r[1]; q.req = r[6];
+      q.refs = [...r[6].matchAll(/\(#([^)]+)\)/g)].map(m => canon(m[1].trim()));
+      q.hay = (r.join(' | ') + ' | #' + lab(q.id)).toLowerCase();
+    }
+    const F = [['Quest Number', q => q.n], ['Quest Name', q => q.name.toLowerCase()], ['Category', q => q.cat], ['Price', q => num(q.r[ix['Price']])],
+    ['Reward Gil', q => num(q.r[ix['Reward Gil']])], ['Reward AP', q => num(q.r[ix['Reward AP']])], ['Reward CP', q => num(q.r[ix['Reward CP']])],
+    ['Clan Level Point', q => q.skt], ...SK.map((k, i) => [k, q => q.sk[i]])];
+    const init = () => ({q: '', cat: '', rep: '', f: 0, d: 1, chain: [], open: null});
+    let S = init();
+    const $ = id => document.getElementById(id);
+    $('cf').innerHTML = '<option value="">All categories</option>' + [...new Set(Q.map(q => q.cat))].sort().map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    $('sf').innerHTML = F.map((f, i) => `<option value="${i}">${f[0]}</option>`).join('');
+    function parseReq(req) {
+      const out = [], re = /\(#([^)]+)\)/g, conds = t => t.split(',').map(x => x.trim()).filter(Boolean).forEach(x => out.push({c: x}));
+      let pos = 0, m;
+      while ((m = re.exec(req))) {
+        const id = canon(m[1].trim());
+        const before = req.slice(pos, m.index).replace(/\s+$/, '').replace(/^[\s,]+/, '');
+        const known = (byN.get(id) || {}).name;
+        let name, rest;
+        if (known && before.endsWith(known) && (before.length === known.length || /,\s*$/.test(before.slice(0, before.length - known.length)))) {name = known; rest = before.slice(0, before.length - known.length);}
+        else {const k = before.lastIndexOf(', '); name = k >= 0 ? before.slice(k + 2) : before; rest = k >= 0 ? before.slice(0, k) : '';}
+        conds(rest);
+        out.push({n: id, name});
+        pos = m.index + m[0].length;
+      }
+      conds(req.slice(pos));
+      return out;
+    }
+    function renameRef(req, id, old, name) {
+      const hits = [...req.matchAll(/\(#([^)]+)\)/g)].filter(m => canon(m[1].trim()) === id && req.slice(0, m.index).endsWith(old + ' ')).reverse();
+      hits.forEach(m => {const a = m.index - old.length - 1; req = req.slice(0, a) + name + ' ' + req.slice(m.index);});
+      return req;
+    }
+    const tags = q => parseReq(q.req).map(p => {
+      if (p.n !== undefined) {const n = p.n; return `<button type="button" class="tag${S.chain.includes('#' + n) ? ' on' : ''}" data-n="${esc(n)}" title="Add #${lab(n)} and #${lab(q.id)} to the chain"><span class="f">${esc(p.name)} (</span>#${lab(n)}<span class="f">)</span></button>`}
+      return `<span class="cond">${esc(p.c)}</span>`;
+    }).join('') || '<span class="dim">&mdash;</span>';
+    const v = x => (x === '' || x === '---') ? '<span class="dim">&mdash;</span>' : esc(x.replace(/^--(.*)--$/, '$1'));
+    const g = (q, k) => q.r[ix[k]];
+    const kv = (k, val) => `<div class="kv"><dt>${k}</dt><dd>${val}</dd></div>`;
+    // Normalizes item names to ensure required items and reward items match
+    const cleanItem = val => (val || '').replace(/ \[UNUSED\]$/, '');
+
+    const allReqItems = new Set();
+    Q.forEach(q => {
+      const r1 = cleanItem(g(q, 'Required Item 1'));
+      const r2 = cleanItem(g(q, 'Required Item 2'));
+      if (r1 !== '---') allReqItems.add(r1);
+      if (r2 !== '---') allReqItems.add(r2);
+    });
+
+    const RAND = JSON.parse(document.getElementById('rnd').textContent);
+    function itemBtn(val) {
+      if (!val || val === '---') return '<span class="dim">&mdash;</span>';
+      const rm = /^--Type (\d+) Random Item--$/.exec(val);
+      if (rm && RAND[rm[1]]) return `<button type="button" class="tag rnd" data-rand="${rm[1]}" aria-haspopup="dialog" title="Show the possible items">Type ${rm[1]} Random Item</button>`;
+      let cName = cleanItem(val); // Used for tracking and matching (e.g., "Ahriman Eye")
+      let disp = val.replace(/^--(.*)--$/, '$1'); // Used for display (e.g., "Ahriman Eye [UNUSED]")
+
+      if (allReqItems.has(cName)) {
+        return `<button type="button" class="tag${S.chain.includes(cName) ? ' on' : ''}" data-item="${esc(cName)}" title="Show quests linked to this item">${esc(disp)}</button>`;
+      }
+      return esc(disp);
+    }
+
+    function hasItem(q, c) {
+      return cleanItem(g(q, 'Required Item 1')) === c ||
+        cleanItem(g(q, 'Required Item 2')) === c ||
+        cleanItem(g(q, 'Reward Item 1')) === c ||
+        cleanItem(g(q, 'Reward Item 2')) === c ||
+        cleanItem(g(q, 'Reward Item 3')) === c ||
+        cleanItem(g(q, 'Reward Item 4')) === c;
+    }
+    function card(q) {
+      const it = ['Reward Item 1', 'Reward Item 2', 'Reward Item 3', 'Reward Item 4'].map((k, i) => `<li><em>${i + 1}.</em> ${itemBtn(g(q, k))}</li>`).join('');
+      const sk = SKN.map((s, i) => `<div><span>${s}</span><i><u style="width:${Math.min(q.sk[i], 100)}%"></u></i><b>${q.sk[i] || '<span class="dim">&mdash;</span>'}</b></div>`).join('');
+      return `<div class="card"><button type="button" class="reset edit-btn" aria-haspopup="dialog" title="Edit this quest">Edit</button><h2><small>#${lab(q.id)}</small>${esc(q.name)}</h2>
+ <section><h3>Quest</h3><dl>${kv('Category', v(q.cat))}${kv('Price', v(g(q, 'Price')))}${kv('Clear Condition', v(g(q, 'Clear Condition')))}${kv('Availability', v(g(q, 'Availability')))}${kv('Repeatable', v(g(q, 'Repeatable')))}${kv('Appears when', tags(q))}</dl></section>
+<section><h3>Requirements</h3><dl>${kv('Required Item 1', itemBtn(g(q, 'Required Item 1')))}${kv('Required Item 2', itemBtn(g(q, 'Required Item 2')))}${kv('Skills/Job', v(g(q, 'Required Skills/Job')))}</dl>
+ <h3 style="margin-top:16px">Recruit</h3><dl>${kv('Recruit', v(g(q, 'Recruit')))}</dl></section>
+ <section><h3>Rewards</h3><div class="stats"><div class="stat"><b>${esc(g(q, 'Reward Gil'))}</b></div><div class="stat"><b>${esc(g(q, 'Reward AP'))}</b></div><div class="stat"><b>${esc(g(q, 'Reward CP'))}</b></div></div><ul class="items">${it}</ul></section>
+ <section><h3>Clan skills</h3><div class="sk">${sk}</div></section>
+ <section class="full"><h3>Note</h3><p class="note-t">${g(q, 'Note') ? esc(g(q, 'Note')) : '<span class="dim">No note.</span>'}</p></section></div>`
+    }
+    function view() {
+      const t = S.q.toLowerCase().split(/\s+/).filter(Boolean);
+      let a = Q.filter(q => t.every(x => q.hay.includes(x)));
+      if (S.cat) a = a.filter(q => q.cat === S.cat);
+      // Anything other than "No" (Yes, 20 days, 60 days...) counts as repeatable
+      if (S.rep) a = a.filter(q => (g(q, 'Repeatable').trim().toLowerCase() !== 'no') === (S.rep === 'yes'));
+      if (S.chain.length) {
+        a = a.filter(q => S.chain.includes('#' + q.id) || S.chain.some(c => c[0] !== '#' && hasItem(q, c)));
+      }
+      const f = F[S.f][1];
+      return a.sort((x, y) => {const A = f(x), B = f(y); return ((A < B ? -1 : A > B ? 1 : 0) * S.d) || (x.n - y.n)})
+    }
+    function render() {
+      const a = view();
+      const inChain = q => S.chain.includes('#' + q.id) || S.chain.some(c => c[0] !== '#' && hasItem(q, c));
+
+      $('tb').innerHTML = a.length ? a.map(q => `<tr class="row ${q.cat === 'Main Quest' ? 'm' : q.cat === 'Dispatch Quest' ? 'd' : 'o'}${inChain(q) ? ' inch' : ''}${S.open === q.id ? ' open' : ''}" data-n="${esc(q.id)}" tabindex="0" aria-expanded="${S.open === q.id}"><td class="n">${lab(q.id)}</td><td class="nm">${esc(q.name)}</td><td class="rq">${tags(q)}</td></tr>${S.open === q.id ? `<tr class="det"><td colspan="3">${card(q)}</td></tr>` : ''}`).join('')
+        : '<tr><td colspan="3" class="empty">No quests match. Adjust the search, filters or chain.</td></tr>';
+
+      $('cnt').textContent = `Showing ${a.length} of ${Q.length} quests`;
+
+      $('chain').innerHTML = S.chain.length
+        ? '<span class="ttl">Chain</span>' + S.chain.map(c => c[0] === '#'
+          ? `<button type="button" class="chip" data-rm="${esc(c)}" title="Remove from chain">#${lab(c.slice(1))} ${esc((byN.get(c.slice(1)) || {name: ''}).name)} &times;</button>`
+          : `<button type="button" class="chip" data-rm-item="${esc(c)}" title="Remove from chain">Item: ${esc(c.replace(/^--(.*)--$/, '$1'))} &times;</button>`
+        ).join('<i class="lk"></i>') + '<button type="button" class="clr" id="cc">Clear chain</button>'
+        : '';
+    }
+    function openRand(n) {
+      $('rdt').textContent = `Type ${n} Random Item`;
+      $('rdc').textContent = `${RAND[n].length} possible items`;
+      $('rdl').innerHTML = RAND[n].map(x => `<li>${esc(x)}</li>`).join('');
+      $('rdl').scrollTop = 0;
+      $('rd').showModal();
+    }
+    $('rd').addEventListener('click', e => {if (e.target === $('rd') || e.target.closest('[data-close]')) $('rd').close()});
+    $('tb').addEventListener('click', e => {
+      if (e.target.closest('.edit-btn')) {openEdit(S.open); return;}
+      const tg = e.target.closest('.tag');
+      if (tg) {
+        if (tg.dataset.rand) {openRand(tg.dataset.rand); return;}
+        if (tg.dataset.n) {
+          const n = tg.dataset.n;
+          // The quest whose requirement was clicked (table row, or the open detail card)
+          const srcRow = tg.closest('tr.row');
+          const src = srcRow ? srcRow.dataset.n : (tg.closest('tr.det') ? S.open : null);
+          // Add the required quest first, then the quest that requires it
+          [n, src].forEach(x => {if (x !== null && !S.chain.includes('#' + x)) S.chain.push('#' + x);});
+        } else if (tg.dataset.item) {
+          const item = tg.dataset.item;
+          if (!S.chain.includes(item)) S.chain.push(item);
+        }
+        render();
+        return;
+      }
+      const r = e.target.closest('tr.row');
+      if (r) {const n = r.dataset.n; S.open = S.open === n ? null : n; render(); const el = document.querySelector(`tr.row[data-n="${n}"]`); if (el && S.open === n) el.focus({preventScroll: true})}
+    });
+
+    $('chain').addEventListener('click', e => {
+      const c = e.target.closest('.chip');
+      if (c) {
+        if (c.dataset.rm) S.chain = S.chain.filter(n => n !== c.dataset.rm);
+        else if (c.dataset.rmItem) S.chain = S.chain.filter(n => n !== c.dataset.rmItem);
+      }
+      else if (e.target.id === 'cc') S.chain = [];
+      else return;
+      render();
+    });
+    $('tb').addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr.row')) {e.preventDefault(); e.target.click()}
+    });
+    $('q').addEventListener('input', e => {S.q = e.target.value; render()});
+    $('cf').addEventListener('change', e => {S.cat = e.target.value; render()});
+    $('rf').addEventListener('change', e => {S.rep = e.target.value; render()});
+    $('sf').addEventListener('change', e => {S.f = +e.target.value; render()});
+    $('sd').addEventListener('change', e => {S.d = +e.target.value; render()});
+    $('rs').addEventListener('click', () => {
+      // Only reset search and sort state, keep S.chain and S.open intact
+      S.q = '';
+      S.cat = '';
+      S.rep = '';
+      S.f = 0;
+      S.d = 1;
+
+      // Reset the UI inputs
+      $('q').value = '';
+      $('cf').value = '';
+      $('rf').value = '';
+      $('sf').value = '0';
+      $('sd').value = '1';
+
+      render();
+    });
+
+    // Check saved preference on load
+    const isHidden = localStorage.getItem('ffta_bar_hidden') === 'true';
+    const bar = document.querySelector('.bar');
+    const tbBtn = $('tbBtn');
+
+    if (isHidden) {
+      bar.classList.add('hidden');
+      tbBtn.textContent = 'Show Search';
+    }
+
+    tbBtn.addEventListener('click', e => {
+      bar.classList.toggle('hidden');
+      const hidden = bar.classList.contains('hidden');
+      e.target.textContent = hidden ? 'Show Search' : 'Hide Search';
+      localStorage.setItem('ffta_bar_hidden', hidden);
+    });
+
+    // ---- Edit quest
+    let EDIT = null;
+    const EF = [['ef-name', 'Quest Name'], ['ef-req', 'Appearance Requirement'], ['ef-rec', 'Recruit'], ['ef-note', 'Note']];
+    function openEdit(id) {
+      const q = byN.get(id); if (!q) return;
+      EDIT = q;
+      $('edt').textContent = `Edit quest #${lab(q.id)}`;
+      EF.forEach(([el, col]) => $(el).value = q.r[ix[col]]);
+      $('efe').textContent = ''; $('ef-qs').value = ''; qSearch();
+      $('ed').showModal();
+      $('ed').style.top = (window.scrollY + 12) + 'px';
+      $('ef-name').focus();
+    }
+    $('edf').addEventListener('submit', e => {
+      e.preventDefault();
+      const one = t => t.replace(/\s*[\r\n]+\s*/g, ' ').trim();
+      const name = one($('ef-name').value);
+      if (!name) {$('efe').textContent = 'Quest Name cannot be empty.'; return;}
+      const old = EDIT.name, names = new Map(Q.map(o => [o.id, o.name]));
+      EF.forEach(([el, col]) => {const raw = $(el).value; EDIT.r[ix[col]] = col === 'Quest Name' ? name : col === 'Note' ? raw.trim() : col === 'Appearance Requirement' ? (normReq(one(raw), names) || '---') : (one(raw) || '---');});
+      if (old !== name) Q.forEach(o => {if (o !== EDIT && o.refs.includes(EDIT.id)) {o.r[6] = renameRef(o.r[6], EDIT.id, old, name); refreshQ(o);} });
+      refreshQ(EDIT);
+      const ok = saveData(); if (ok) usingSaved = true;
+      $('ed').close();
+      render();
+      if (!ok) alert('Could not save to local storage. The change stays until this page is closed.');
+    });
+    function qSearch() {
+      const t = $('ef-qs').value.trim().toLowerCase().replace(/^#/, ''), box = $('ef-res');
+      if (!t) {box.innerHTML = '<p>Type a name or number to find a quest.</p>'; return;}
+      const have = new Set(parseReq($('ef-req').value).filter(p => p.n !== undefined).map(p => p.n));
+      const list = Q.filter(q => q !== EDIT && (q.name.toLowerCase().includes(t) || lab(q.id).toLowerCase().includes(t))).slice(0, 30);
+      box.innerHTML = list.length ? list.map(q => `<button type="button" data-id="${esc(q.id)}"${have.has(q.id) ? ' disabled' : ''}><b>#${esc(lab(q.id))}</b>${esc(q.name)}${have.has(q.id) ? ' (added)' : ''}</button>`).join('') : '<p>No matching quests.</p>';
+    }
+    $('ef-qs').addEventListener('input', qSearch);
+    $('ef-qs').addEventListener('keydown', e => {if (e.key === 'Enter') e.preventDefault();});
+    $('ef-req').addEventListener('input', qSearch);
+    $('ef-res').addEventListener('click', e => {
+      const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
+      const q = byN.get(b.dataset.id), ta = $('ef-req'), cur = ta.value.trim();
+      ta.value = (cur && cur !== '---' ? cur.replace(/[,\s]+$/, '') + ', ' : '') + `${q.name} (#${lab(q.id)})`;
+      $('ef-qs').value = ''; qSearch(); $('ef-qs').focus();
+    });
+    // ---- Data dialog: export / import / reset
+    const csvCell = t => /[;"\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    function exportCSV() {
+      const text = '\ufeff' + [H, ...R].map(r => r.map(csvCell).join(';')).join('\r\n') + '\r\n';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv;charset=utf-8'}));
+      a.download = 'FFTA_QUEST.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      $('ddm').textContent = `Exported ${R.length} quests to FFTA_QUEST.csv.`;
+    }
+    function parseCSV(t, d) {
+      const rows = []; let row = [], f = '', inq = false;
+      for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (inq) {if (c === '"') {if (t[i + 1] === '"') {f += '"'; i++} else inq = false} else f += c}
+        else if (c === '"' && f === '') inq = true;
+        else if (c === d) {row.push(f); f = ''}
+        else if (c === '\n' || c === '\r') {if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''}
+        else f += c;
+      }
+      if (f !== '' || row.length) {row.push(f); rows.push(row)}
+      return rows;
+    }
+    function dataStatus() {$('dds').textContent = usingSaved ? 'Using data saved in this browser' : 'Using the default embedded data';}
+    function openData(msg) {dataStatus(); $('ddm').textContent = msg || ''; $('dd').showModal();}
+    $('dataBtn').addEventListener('click', () => openData());
+    $('ddx').addEventListener('click', exportCSV);
+    $('ddi').addEventListener('click', () => $('imp').click());
+    $('imp').addEventListener('change', e => {
+      const file = e.target.files[0]; e.target.value = '';
+      if (!file) return;
+      const fr = new FileReader();
+      fr.onload = () => {
+        try {
+          const text = String(fr.result).replace(/^\ufeff/, '');
+          const first = text.split(/\r?\n/)[0];
+          const d = first.split(';').length >= first.split(',').length ? ';' : ',';
+          const rows = parseCSV(text, d).filter(r => r.some(c => c.trim() !== ''));
+          if (rows.length < 2) throw new Error('the file has no quest rows.');
+          const head = rows[0].map(h => h.trim()), idx = H.map(h => head.indexOf(h));
+          const miss = H.filter((h, i) => idx[i] < 0 && h !== 'Note');
+          if (miss.length) throw new Error('missing column(s): ' + miss.join(', '));
+          const out = rows.slice(1).map(r => idx.map(i => r[i] === undefined ? '' : r[i]));
+          {const nm = new Map(out.map(r => [canon(r[0].trim()), r[1]])); out.forEach(r => {r[6] = normReq(r[6], nm);});}
+          const ids = new Set();
+          out.forEach((r, i) => {
+            const id = canon(r[0].trim());
+            if (!id) throw new Error(`row ${i + 2} has no Quest Number.`);
+            if (ids.has(id)) throw new Error(`Quest Number ${r[0]} appears more than once.`);
+            ids.add(id);
+          });
+          if (!confirm(`Replace the current quest data with ${out.length} quests from "${file.name}"?`)) return;
+          localStorage.setItem(LSK, JSON.stringify({h: H, r: out}));
+          sessionStorage.setItem('ffta-msg', `Imported ${out.length} quests from ${file.name}.`);
+          location.reload();
+        } catch (err) {$('ddm').textContent = 'Import failed: ' + err.message;}
+      };
+      fr.readAsText(file);
+    });
+    $('ddr').addEventListener('click', () => {
+      if (!confirm('Discard all saved edits and imports and load the default embedded data?')) return;
+      try {localStorage.removeItem(LSK);} catch (e) { }
+      sessionStorage.setItem('ffta-msg', 'Default data restored.');
+      location.reload();
+    });
+    ['ed', 'dd'].forEach(id => $(id).addEventListener('click', e => {if (e.target === $(id) || e.target.closest('[data-close]')) $(id).close()}));
+
+    render();
+    const pending = sessionStorage.getItem('ffta-msg');
+    if (pending) {sessionStorage.removeItem('ffta-msg'); openData(pending);}
+  </script>
+</body>
+
+</html>
