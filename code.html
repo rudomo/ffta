@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FFTA Code Generator</title>
+<style>
+:root{--ink:#00171f;--navy:#003459;--sea:#007ea7;--sky:#00a8e8;--white:#fff;--warn:#ffcf56;--line:rgba(0,126,167,.4);--mute:rgba(255,255,255,.68);--danger:#ff5252;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--white);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+h1{margin:0 0 4px;font:700 clamp(26px,5vw,36px)/1.1 "Trebuchet MS",system-ui,sans-serif;letter-spacing:-.01em}
+.sub{margin:0 0 18px;color:var(--mute)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;color:var(--mute);cursor:pointer;white-space:nowrap;font-weight:600}
+.tab:hover{color:var(--white)}
+.tab[aria-selected=true]{color:var(--sky);border-bottom-color:var(--sky)}
+[hidden]{display:none!important}
+.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:10px;align-items:end;padding:14px;background:var(--navy);border-radius:12px}
+label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:4px}
+select,input[type=number],input[type=text],input[type=search]{width:100%;height:42px;padding:0 10px;background:var(--ink);border:1px solid var(--sea);border-radius:8px;color:var(--white)}
+.icon{height:42px;width:46px;border-radius:8px;border:1px solid var(--sky);background:transparent;color:var(--sky);cursor:pointer;display:grid;place-items:center}
+.icon:hover{background:var(--sky);color:var(--ink)}
+.icon svg{width:20px;height:20px;transition:transform .4s}
+.icon.spin svg{transform:rotate(360deg)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:20px 0 14px}
+.bar p{margin:0;color:var(--mute)}
+.btn{height:42px;padding:0 18px;border-radius:8px;border:1px solid var(--sky);background:transparent;color:var(--sky);font-weight:600;cursor:pointer}
+.btn:hover{background:var(--sky);color:var(--ink)}
+.btn.primary{background:var(--sky);color:var(--ink);padding:0 26px}
+.btn.primary:hover{background:var(--white);border-color:var(--white)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.danger:hover{background:var(--danger);color:var(--white)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--navy);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative}
+.rr{display:none;position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;border-radius:8px;border:1px solid var(--sky);background:transparent;color:var(--sky);cursor:pointer;place-items:center}
+.rr svg{width:18px;height:18px}
+.rr:hover{background:var(--sky);color:var(--ink)}
+.card.is-rand .rr{display:grid}
+.card.flag{border-color:var(--warn)}
+.card h3{margin:0;font-size:20px;color:var(--sky);letter-spacing:.04em}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meta{font-size:12.5px;color:var(--mute)}
+.card input{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.note{margin:0;min-height:1.4em;font-size:12.5px;color:var(--mute)}
+.note.w{color:var(--warn)}
+.code{display:flex;gap:8px;align-items:center;margin-top:auto}
+code{flex:1;min-width:0;padding:9px 8px;background:var(--ink);border-radius:8px;font:600 14px ui-monospace,Menlo,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .btn{height:38px;padding:0 14px}
+.top .icon{flex:none}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+dialog{border:1px solid var(--sky);border-radius:12px;background:var(--navy);color:var(--white);padding:0;width:min(500px,calc(100vw - 24px))}
+dialog::backdrop{background:rgba(0,23,31,.82)}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font:700 20px "Trebuchet MS",system-ui,sans-serif}
+.dh .btn{height:36px;padding:0 14px}
+.db{padding:16px;display:flex;flex-direction:column;gap:16px}
+.db p{margin:0;color:var(--mute);font-size:14px}
+.var-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;padding-right:4px}
+.var-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:var(--ink);padding:8px 12px;border-radius:8px;border:1px solid var(--line)}
+.var-item button{height:36px;padding:0 10px;font-size:13px}
+.add-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;background:rgba(0,126,167,.15);padding:12px;border-radius:8px;border:1px dashed var(--sea)}
+details{margin-top:20px;color:var(--mute);font-size:14px}
+summary{cursor:pointer;color:var(--white);font-weight:600}
+details ul{margin:8px 0 0;padding-left:20px}
+.nout{margin-bottom:16px;padding:14px;background:var(--navy);border:1px solid var(--sky);border-radius:12px}
+.nh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.nh h2{margin:0;font:700 22px "Trebuchet MS",system-ui,sans-serif}.nh .meta{margin:2px 0 0}
+.nsel{width:150px;flex:none}
+.lines{display:grid;gap:6px;margin-bottom:12px}
+.lines code{display:block;padding:10px 12px;font-size:15px}
+.nf{display:flex;gap:10px;width:fit-content;max-width:100%}
+.nf>div:first-child{flex:0 1 300px;width:300px;min-width:0}
+.nf>div:last-child{flex:none;width:150px}
+.wrap.t{border:1px solid var(--line);border-radius:12px;max-height:min(66vh,640px);overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 14px;text-align:left;white-space:nowrap}
+th{position:sticky;top:0;z-index:1;background:var(--navy);border-bottom:1px solid var(--sky)}
+td{border-top:1px solid var(--line)}
+th.ar,td.act{text-align:right}
+td.mono{font:600 14px ui-monospace,Menlo,Consolas,monospace;color:var(--sky)}
+.sort{background:none;border:0;padding:0;font-weight:600;color:var(--white);cursor:pointer}
+.sort:hover{color:var(--sky)}
+.sort i{font-style:normal;color:var(--sky);display:inline-block;min-width:1em}
+tbody tr:hover td{background:rgba(0,52,89,.6)}
+tr.sel td{background:rgba(0,168,232,.16)}
+td.act .btn{height:32px;padding:0 16px}
+@media (max-width:760px){.nf{width:100%}.nf>div:first-child{flex:1 1 0;width:auto}.nf>div:last-child{width:120px}.nh{flex-direction:column}.nsel{width:100%}th,td{padding:9px 10px}.controls{grid-template-columns:1fr 1fr}.controls .icon{width:100%;grid-column:1/-1}.btn.primary{width:100%}.bar{align-items:stretch}}
+@media (prefers-reduced-motion:reduce){.icon svg{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div><h1>FFTA Code Generator</h1>
+<p class="sub">Gameshark codes for character stats and generic names.</p></div>
+<button class="icon" id="gear" type="button" aria-haspopup="dialog" aria-label="Variation settings" title="Variation settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+<div class="tabs" role="tablist" aria-label="Tools">
+ <button class="tab" role="tab" id="t0" aria-controls="p0" aria-selected="true">Stat Code</button>
+ <button class="tab" role="tab" id="t1" aria-controls="p1" aria-selected="false" tabindex="-1">Name Code</button>
+</div>
+<section id="p0" role="tabpanel" aria-labelledby="t0">
+ <div class="controls">
+  <div><label for="race">Race</label><select id="race"></select></div>
+  <div><label for="job">Job</label><select id="job"></select></div>
+  <div><label for="lvl">Level (1-50)</label><input id="lvl" type="number" min="1" max="50" step="1" inputmode="numeric" value="1"></div>
+  <div><label for="slot">Character slot</label><select id="slot"></select></div>
+  <button class="icon" id="rf" type="button" aria-label="Recalculate or re-roll and clear manual edits" title="Recalculate / re-roll (clears manual edits)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
+ </div>
+ <div class="bar"><p id="sum" aria-live="polite"></p><button class="btn primary" id="all" type="button">Copy All</button></div>
+ <div class="cards" id="cards"></div>
+ <details><summary>How values are calculated</summary><ul>
+  <li>Level-ups = Level &minus; 1. Base = Base stat + (Growth + Bonus chance &divide; 10) &times; level-ups.</li>
+  <li>Min = (Base stat + Growth &times; level-ups) &times; Min Variation %, with no bonus gains.</li>
+  <li>Max = (Base stat + (Growth + 1) &times; level-ups) &times; Max Variation %, where a +1 bonus is counted only if the bonus chance is above 0.</li>
+  <li>Random picks a whole number between each stat's Min and Max result. It re-rolls when you change a control or press the refresh button, and stays fixed while you edit values.</li>
+  <li>Level uses the Lv code and follows the Level control. EXP uses the exp code; the job data has no EXP values, so it is a manual value that starts at 0 and is limited to a maximum of 99.</li>
+  <li>Results are rounded down to the nearest whole number and limited to 0&ndash;999. Codes are the slot's address followed by the value as 4 hex digits.</li></ul></details>
+</section>
+<section id="p1" role="tabpanel" aria-labelledby="t1" hidden>
+ <div class="nout" id="nout" hidden>
+  <div class="nh"><div><h2 id="nname"></h2><p id="ncode" class="meta"></p></div>
+   <div class="nsel"><label for="nchar">Character</label><select id="nchar"></select></div></div>
+  <div class="lines" id="nlines"></div>
+  <button class="btn primary" id="ncopy" type="button" data-l="Copy">Copy</button>
+ </div>
+ <div class="controls nf">
+  <div><label for="nq">Search name or code</label><input id="nq" type="search" placeholder="e.g. Arthur or 6A00" autocomplete="off"></div>
+  <div><label for="ng">Gender</label><select id="ng"><option value="">All</option><option>Male</option><option>Female</option></select></div>
+ </div>
+ <p class="meta" id="ncnt" aria-live="polite" style="margin:12px 0 8px"></p>
+ <div class="wrap t"><table><thead><tr>
+  <th id="h0" aria-sort="ascending"><button class="sort" data-k="0" type="button">Code <i></i></button></th>
+  <th id="h1" aria-sort="none"><button class="sort" data-k="1" type="button">Name <i></i></button></th>
+  <th id="h2" aria-sort="none"><button class="sort" data-k="2" type="button">Gender <i></i></button></th>
+  <th class="ar">Action</th></tr></thead><tbody id="nb"></tbody></table></div>
+</section>
+</main>
+<dialog id="cfgd" aria-labelledby="cfgt">
+ <div class="dh"><h2 id="cfgt">Variation settings</h2><button class="btn" type="button" data-close>Close</button></div>
+ <div class="db">
+  <p>Manage percentage options for stat variations. You can add custom percentage rules below.</p>
+  <div class="var-list" id="varlist"></div>
+  <div class="add-form">
+   <div><label for="newvarid">Option Label</label><input id="newvarid" type="text" placeholder="e.g. High (110%)"></div>
+   <div><label for="newvarpct">Percentage (%)</label><input id="newvarpct" type="number" min="1" max="300" step="any" placeholder="110"></div>
+   <button class="btn primary" id="addvarbtn" type="button">Add</button>
+  </div>
+  <button class="btn" id="cfd" type="button">Reset to Defaults</button>
+ </div>
+</dialog>
+<script id="nd" type="application/json">{"names":[["6A00","Arthur","Male"],["6A08","Ardin","Male"],["6A0F","Isaac","Male"],["6A16","Aksel","Male"],["6A1D","Azimov","Male"],["6A25","Alcest","Male"],["6A2D","Alexey","Male"],["6A35","Alek","Male"],["6A3B","Angell","Male"],["6A43","Anton","Male"],["6A4A","Anry","Male"],["6A50","Evor","Male"],["6A56","Iden","Male"],["6A5C","Ichbod","Male"],["6A64","Ivolt","Male"],["6A6B","Elija","Male"],["6A72","Ingg","Male"],["6A78","Vasil","Male"],["6A7F","Wilfred","Male"],["6A88","Wells","Male"],["6A8F","Werner","Male"],["6A97","Woolwort","Male"],["6AA1","Udvil","Male"],["6AA8","Istavan","Male"],["6AB1","Edmund","Male"],["6AB9","Emet","Male"],["6ABF","Elias","Male"],["6AC6","Elvos","Male"],["6ACD","Elnan","Male"],["6AD4","Elmon","Male"],["6ADB","Yenke","Male"],["6AE2","Oigen","Male"],["6AE9","Augusto","Male"],["6AF2","Ocon","Male"],["6AF8","Oskar","Male"],["6AFF","Odonel","Male"],["6B07","Olivar","Male"],["6B0F","Olint","Male"],["6B16","Orsiny","Male"],["6B1E","Olgan","Male"],["6B25","Carson","Male"],["6B2D","Guin","Male"],["6B33","Jareth","Male"],["6B3B","Karl","Male"],["6B41","Carrelo","Male"],["6B4A","Gavvar","Male"],["6B52","Cuthbert","Male"],["6B5C","Camus","Male"],["6B63","Carlos","Male"],["6B6B","Giger","Male"],["6B72","Kief","Male"],["6B78","Kilov","Male"],["6B7F","Kipper","Male"],["6B87","Cassidy","Male"],["6B90","Gallahan","Male"],["6B9A","Gilbert","Male"],["6BA3","Kingsley","Male"],["6BAD","Cooper","Male"],["6BB5","Gustav","Male"],["6BBD","Grandi","Male"],["6BC5","Gillis","Male"],["6BCD","Cliffor","Male"],["6BD6","Crout","Male"],["6BDD","Graham","Male"],["6BE5","Clay","Male"],["6BEB","Crowe","Male"],["6BF2","Galor","Male"],["6BF9","Caines","Male"],["6C01","Georg","Male"],["6C08","Kestner","Male"],["6C11","Kenneth","Male"],["6C1A","Kemal","Male"],["6C21","Kent","Male"],["6C27","Cochran","Male"],["6C30","Cox","Male"],["6C35","Gotwald","Male"],["6C3E","Goodwin","Male"],["6C47","Godfrey","Male"],["6C50","Conner","Male"],["6C58","Conrad","Male"],["6C60","Simon","Male"],["6C67","Syrus","Male"],["6C6E","Sale","Male"],["6C74","Satir","Male"],["6C7B","Zenelly","Male"],["6C84","Sabatini","Male"],["6C8E","Safra","Male"],["6C95","Sammy","Male"],["6C9C","Sandath","Male"],["6CA5","Gelarto","Male"],["6CAE","Gerome","Male"],["6CB6","Sigmund","Male"],["6CBF","Sharu","Male"],["6CC6","Shudmeyer","Male"],["6CD1","Schneider","Male"],["6CDC","Julian","Male"],["6CE4","Sh Schultz","Male"],["6CEC","Loki","Male"],["6CF2","Silac","Male"],["6CF9","Gilbert","Male"],["6D02","Skimble","Male"],["6D0B","Staring","Male"],["6D14","Stan","Male"],["6D1A","Stanz","Male"],["6D21","Stuart","Male"],["6D29","Spengler","Male"],["6D33","Smyth","Male"],["6D3A","Slamen","Male"],["6D42","Thane","Male"],["6D49","Zeeman","Male"],["6D51","Seth","Male"],["6D57","Thedoric","Male"],["6D61","Seneka","Male"],["6D69","Selm","Male"],["6D6F","Seleucos","Male"],["6D79","Soala","Male"],["6D80","Zoik","Male"],["6D86","Salsber","Male"],["6D8F","Thorton","Male"],["6D98","Sotel","Male"],["6D9F","Darcy","Male"],["6DA6","Turner","Male"],["6DAE","Tavana","Male"],["6DB6","David","Male"],["6DBD","Douglas","Male"],["6DC6","Darios","Male"],["6DCE","Darren","Male"],["6DD6","Cesare","Male"],["6DDE","Chelney","Male"],["6DE7","Chita","Male"],["6DEE","Chibot","Male"],["6DF6","Chaka","Male"],["6DFD","Chad","Male"],["6E03","Chandler","Male"],["6E0D","Chaucer","Male"],["6E16","Zwingley","Male"],["6E20","Deisel","Male"],["6E28","Deiter","Male"],["6E30","Deen","Male"],["6E36","Dickens","Male"],["6E3F","Dino","Male"],["6E45","Timothy","Male"],["6E4E","Devange","Male"],["6E57","Dave","Male"],["6E5D","Theodore","Male"],["6E67","Thenardi","Male"],["6E71","Tennesey","Male"],["6E7B","Devoe","Male"],["6E82","Duler","Male"],["6E89","Dylan","Male"],["6E90","Toynbee","Male"],["6EA0","Domie","Male"],["6EA0","Tony","Male"],["6EA6","Tonio","Male"],["6EAD","Toby","Male"],["6EB3","Thomson","Male"],["6EBC","Domenic","Male"],["6EC5","Travis","Male"],["6ECD","Trevor","Male"],["6ED5","Dwight","Male"],["6EDD","Nat","Male"],["6EE2","Nabkov","Male"],["6EEA","Nansen","Male"],["6EF2","Nikolai","Male"],["6EFB","Neuman","Male"],["6F03","Nils","Male"],["6F09","Nusratt","Male"],["6F12","Nume","Male"],["6F18","Nate","Male"],["6F1E","Nevil","Male"],["6F25","Neksu","Male"],["6F2C","Neddy","Male"],["6F33","Nelin","Male"],["6F3A","Nelson","Male"],["6F42","Nero","Male"],["6F48","Nothclif","Male"],["6F52","Norbert","Male"],["6F5B","Nobel","Male"],["6F62","Noman","Male"],["6F69","Nol","Male"],["6F6E","Hardy","Male"],["6F75","Basil","Male"],["6F7C","Pablo","Male"],["6F83","Parish","Male"],["6F8B","Baldwin","Male"],["6F94","Barley","Male"],["6F9C","Hans","Male"],["6FA2","Heath","Male"],["6FA9","Peet","Male"],["6FAF","Higgins","Male"],["7001","Brown","Male"],["7008","Frantz","Male"],["7010","Brean","Male"],["7017","Brish","Male"],["701E","Hastings","Male"],["7028","Pedro","Male"],["702F","Velasquez","Male"],["703A","Beltran","Male"],["7043","Bernardo","Male"],["704D","Belnini","Male"],["7056","Brunhart","Male"],["7060","Benkman","Male"],["7069","Bensom","Male"],["7071","Benjamin","Male"],["707B","Benton","Male"],["7083","Homer","Male"],["708A","Hodges","Male"],["7092","Hopper","Male"],["709A","Hoffman","Male"],["70A3","Holbin","Male"],["70AB","Hores","Male"],["70B2","Miles","Male"],["70B9","Mauritz","Male"],["70C2","Mack","Male"],["70C8","Macgregor","Male"],["70D3","Matias","Male"],["70DB","Mackenroe","Male"],["70E6","Marty","Male"],["70ED","Marius","Male"],["70F5","Malchelo","Male"],["70FF","Martinez","Male"],["7109","Mick","Male"],["710F","Michaelov","Male"],["711A","Michael","Male"],["7123","Milton","Male"],["712B","Milay","Male"],["7132","Mujika","Male"],["713A","Mulat","Male"],["7141","Muglio","Male"],["7149","Major","Male"],["7150","Meiyou","Male"],["7158","Messara","Male"],["7161","Melanor","Male"],["716A","Mendoza","Male"],["7173","Monid","Male"],["717A","Mosley","Male"],["7182","Moby","Male"],["7188","Moritz","Male"],["7190","Morry","Male"],["7197","Monte","Male"],["719E","Mondo","Male"],["71A5","Javet","Male"],["71AC","Jalam","Male"],["71B3","Jang","Male"],["71B9","Yuwain","Male"],["71C1","Eugene","Male"],["71C9","Euver","Male"],["71D0","Yuri","Male"],["71D6","Yutolio","Male"],["71DF","Juris","Male"],["71E6","Joseph","Male"],["71EE","Jon","Male"],["71F3","Joshua","Male"],["71FB","Jona","Male"],["7201","Johanes","Male"],["720A","Yolando","Male"],["7213","Ravel","Male"],["721A","Raol","Male"],["7220","Lezaford","Male"],["722A","Ramsey","Male"],["7232","Ramses","Male"],["723A","Largo","Male"],["7241","Randorf","Male"],["724A","Ranbard","Male"],["7253","Liam","Male"],["7259","Lidenbok","Male"],["7263","Leo","Male"],["7268","Ricardo","Male"],["7271","Lizzo","Male"],["7278","Rickman","Male"],["7281","Ridley","Male"],["7289","Lief","Male"],["728F","Leroy","Male"],["7296","Luan","Male"],["729C","Looie","Male"],["72A3","Rooster","Male"],["72AC","Bellini","Male"],["72B5","Lucas","Male"],["72BC","Lukino","Male"],["72C4","Lunais","Male"],["72CC","Rayton","Male"],["72D4","Raif","Male"],["72DA","Rain","Male"],["72E0","Leonard","Male"],["72E9","Lester","Male"],["72F1","Lex","Male"],["72F6","Lenny","Male"],["72FD","Lendle","Male"],["7305","Roland","Male"],["730D","Rockwell","Male"],["7317","Rodrigo","Male"],["7320","Rober","Male"],["7327","Rolan","Male"],["732E","Rolf","Male"],["7334","Lorek","Male"],["733B","Roker","Male"],["7342","Wagner","Male"],["734A","Willy","Male"],["7351","Wilder","Male"],["7359","Watz","Male"],["735F","Watoo","Male"],["7366","Annie","Female"],["736D","Agatha","Female"],["7375","Adelaid","Female"],["737E","Amelia","Female"],["7386","Alison","Female"],["738E","Angeline","Female"],["7398","Anne","Female"],["739E","Annette","Female"],["73A7","Iona","Female"],["73AD","Iliana","Female"],["73B5","Erma","Female"],["73BB","Elaine","Female"],["73C3","Ingrid","Female"],["73CB","Virginia","Female"],["73D5","Viola","Female"],["73DC","Edda","Female"],["73E2","Etoile","Female"],["73EA","Eponine","Female"],["73F3","Erika","Female"],["73FA","Elma","Female"],["7400","Elayne","Female"],["7408","Elena","Female"],["740F","Aurelie","Female"],["7418","Odette","Female"],["7420","Undine","Female"],["7428","Gertrude","Female"],["7432","Katarina","Female"],["743C","Cassandra","Female"],["7447","Katie","Female"],["744E","Katejina","Female"],["7458","Catrine","Female"],["7461","Camilla","Female"],["746A","Caroline","Female"],["7474","Kiana","Female"],["747B","Kim","Female"],["7480","Catherine","Female"],["748B","Karin","Female"],["7492","Candice","Female"],["749B","Gwyneth","Female"],["74A4","Gelazela","Female"],["74AE","Grisanbela","Female"],["74BA","Cristine","Female"],["74C4","Clementina","Female"],["74D0","Katie","Female"],["74D7","Kelly","Female"],["74DE","Gelda","Female"],["74E5","Corelie","Female"],["74EE","Colleen","Female"],["74F7","Colette","Female"],["7500","Concetta","Female"],["750A","Saskia","Female"],["7512","Sabina","Female"],["751A","Xia","Female"],["751F","Jeanne","Female"],["7527","Shelly","Female"],["752F","Sheryl","Female"],["7537","Sharon","Female"],["753F","Cici","Female"],["7545","Cecille","Female"],["754E","Sis","Female"],["7553","Sybil","Female"],["755A","Jacqulin","Female"],["7564","Janeth","Female"],["756C","Shanon","Female"],["7574","Jocie","Female"],["757B","Gillian","Female"],["7584","Swena","Female"],["758B","Suzanna","Female"],["7594","Sesily","Female"],["759C","Cecile","Female"],["75A4","Serina","Female"],["75AC","Thelma","Female"],["75B4","Sonja","Female"],["75BB","Sonia","Female"],["75C2","Soraya","Female"],["75CA","Diane","Female"],["75D1","Dana","Female"],["75D7","Tamara","Female"],["75DF","Dalia","Female"],["75E6","Daryle","Female"],["75EE","Darcie","Female"],["75F6","Chiko","Female"],["75FD","Chareen","Female"],["7606","Cecelia","Female"],["760F","Diana","Female"],["7616","Tina","Female"],["761C","Tifone","Female"],["7624","Tinfany","Female"],["762D","Tia","Female"],["7632","Della","Female"],["7639","Delia","Female"],["7640","Delphine","Female"],["764A","Telma","Female"],["7651","Teresya","Female"],["765A","Dusya","Female"],["7661","Tonya","Female"],["7668","Dora","Female"],["766E","Tosca","Female"],["7675","Trixie","Female"],["767D","Trudy","Female"],["7684","Natalia","Female"],["768D","Nana","Female"],["7693","Nanette","Female"],["769C","Nan","Female"],["76A1","Nieve","Female"],["76A8","Nicole","Female"],["76B0","Nina","Female"],["76B6","Nelly","Female"],["76BD","Norma","Female"],["76C4","Noleen","Female"],["76CC","Bertha","Female"],["76D4","Pat","Female"],["76D9","Babette","Female"],["76E2","Hariette","Female"],["76EC","Bianka","Female"],["76F4","Vivian","Female"],["76FC","Hilary","Female"],["7704","Hildegard","Female"],["770F","Viana","Female"],["7716","Pheobe","Female"],["771E","Fio","Female"],["7723","Blanch","Female"],["772B","Francheska","Female"],["7737","Frida","Female"],["773E","Prisya","Female"],["7746","Flora","Female"],["774D","Beatrice","Female"],["7757","Hazel","Female"],["775E","Becile","Female"],["7766","Betti","Female"],["776D","Bela","Female"],["7773","Bonita","Female"],["777B","Polly","Female"],["7782","Pauline","Female"],["778B","Martha","Female"],["7793","Marcy","Female"],["779A","Marjorie","Female"],["77A4","Mila","Female"],["77AA","Madeline","Female"],["77B4","Madrine","Female"],["77BD","Mariette","Female"],["77C7","Marielle","Female"],["77D1","Marion","Female"],["77D9","Marisa","Female"],["77E1","Malta","Female"],["77E8","Mareen","Female"],["77F0","Mallory","Female"],["77F9","Mikella","Female"],["7802","Miserie","Female"],["780B","Miriam","Female"],["7813","Milly","Female"],["781A","Mua","Female"],["781F","Maryane","Female"],["7828","Melissa","Female"],["7831","Meryl","Female"],["7838","Mel","Female"],["783D","Melora","Female"],["7845","Maude","Female"],["784C","Molly","Female"],["7853","Eunice","Female"],["785B","Euphem","Female"],["7863","Eudit","Female"],["786A","Eustine","Female"],["7873","Julianne","Female"],["787D","Laura","Female"],["7884","Lana","Female"],["788A","Labinya","Female"],["7893","Larisa","Female"],["789B","Lisa","Female"],["78A1","Liza","Female"],["78A7","Richane","Female"],["78B0","Lita","Female"],["78B6","Lilila","Female"],["78BE","Louize","Female"],["78C6","Luise","Female"],["78CD","Lucretia","Female"],["78D7","Lutia","Female"],["78DE","Lune","Female"],["78E4","Leona","Female"],["78EB","Regina","Female"],["78F3","Lesley","Female"],["78FB","Laetitia","Female"],["7905","Roxanne","Female"],["790E","Rosaline","Female"],["7918","Rosetta","Female"],["7921","Lotte","Female"],["7928","Loraine","Female"],["7931","Loren","Female"],["7938","Loretta","Female"],["7941","Wanda","Female"]],"lines":[[3,"82000290 ????","82000292 0856","82000396 0000"],[4,"82000398 ????","8200039A 0856","8200049E 0000"],[5,"820004A0 ????","820004A2 0856","820005A6 0000"],[6,"820005A8 ????","820005AA 0856","820006AE 0000"],[7,"820006B0 ????","820006B2 0856","820007B6 0000"],[8,"820007B8 ????","820007BA 0856","820008BE 0000"],[9,"820008C0 ????","820008C2 0856","820009C6 0000"],[10,"820009C8 ????","820009CA 0856","82000ACE 0000"],[11,"82000AD0 ????","82000AD2 0856","82000BD6 0000"],[12,"82000BD8 ????","82000BDA 0856","82000CDE 0000"],[13,"82000CE0 ????","82000CE2 0856","82000DE6 0000"],[14,"82000DE8 ????","82000DEA 0856","82000EEE 0000"],[15,"82000EF0 ????","82000EF2 0856","82000FF6 0000"],[16,"82000FF8 ????","82000FFA 0856","820010FE 0000"],[17,"82001100 ????","82001102 0856","82001206 0000"],[18,"82001208 ????","8200120A 0856","8200130E 0000"],[19,"82001310 ????","82001312 0856","82001416 0000"],[20,"82001418 ????","8200141A 0856","8200151E 0000"],[21,"82001520 ????","82001522 0856","82001626 0000"],[22,"82001628 ????","8200162A 0856","8200172E 0000"],[23,"82001730 ????","82001732 0856","82001836 0000"],[24,"82001838 ????","8200183A 0856","8200193E 0000"]]}</script>
+<script id="d" type="application/json">{"stats":["HP","MP","ATK","DEF","MAG","RES","SPD"],"addr":[2181038234,2181038238,2181038240,2181038242,2181038244,2181038246,2181038418,838860937,838860938],"step":264,"races":{"Hume":[{"j":"Soldier","s":[[40,8,4],[14,1,1],[88,8,8],[88,8,8],[60,6,0],[72,7,2],[100,1,1]]},{"j":"Paladin","s":[[38,7,6],[22,2,2],[80,8,1],[92,9,2],[72,7,2],[88,8,8],[98,0,8]]},{"j":"Fighter","s":[[36,7,2],[12,1,1],[92,9,2],[80,8,1],[56,5,6],[68,6,8],[104,1,1]]},{"j":"Thief","s":[[33,6,6],[15,1,1],[76,7,6],[76,7,6],[76,7,6],[64,6,4],[110,1,8]]},{"j":"Ninja","s":[[29,5,8],[21,2,1],[84,8,4],[72,7,2],[80,8,1],[76,7,6],[120,2,1]]},{"j":"White Mage","s":[[30,6,1],[40,4,8],[60,6,2],[73,7,3],[84,8,4],[80,8,2],[108,1,2]]},{"j":"Black Mage","s":[[28,5,6],[36,4,4],[64,6,4],[68,6,8],[88,8,8],[96,9,6],[96,1,1]]},{"j":"Illusionist","s":[[26,5,2],[38,7,1],[60,6,1],[64,6,4],[92,9,2],[84,8,4],[89,0,9]]},{"j":"Blue Mage","s":[[34,6,8],[30,3,6],[80,8,1],[84,8,4],[84,8,4],[92,9,2],[100,1,2]]},{"j":"Archer","s":[[36,7,2],[18,1,1],[72,7,2],[72,7,2],[64,6,4],[80,8,1],[106,1,4]]},{"j":"Hunter","s":[[34,6,8],[26,3,2],[88,8,8],[68,6,8],[68,6,8],[84,8,4],[112,1,7]]}],"Numou":[{"j":"White Mage","s":[[29,5,8],[52,5,6],[57,5,7],[73,7,3],[88,8,8],[84,8,4],[108,1,1]]},{"j":"Black Mage","s":[[27,5,4],[42,5,2],[62,6,2],[68,6,8],[92,9,2],[100,10,2],[96,0,9]]},{"j":"Time Mage","s":[[26,5,2],[36,3,6],[56,5,6],[68,6,8],[100,10,2],[96,9,6],[98,1,2]]},{"j":"Illusionist","s":[[25,5,1],[46,7,6],[57,5,7],[64,6,4],[96,9,6],[88,8,8],[89,0,8]]},{"j":"Alchemist","s":[[30,6,1],[48,8,4],[59,5,9],[65,6,5],[92,9,2],[96,9,6],[92,0,9]]},{"j":"Beastmaster","s":[[37,7,4],[22,2,1],[88,8,8],[88,8,8],[68,6,8],[84,8,4],[104,1,2]]},{"j":"Morpher","s":[[34,6,8],[32,2,8],[70,7,1],[80,8,2],[76,7,6],[80,8,1],[110,1,6]]},{"j":"Sage","s":[[38,7,6],[38,8,8],[84,8,4],[76,7,6],[92,9,2],[76,7,6],[85,0,8]]}],"Bangaa":[{"j":"Warrior","s":[[46,9,2],[10,2,1],[92,9,2],[84,8,4],[62,6,2],[68,6,8],[95,0,9]]},{"j":"Dragoon","s":[[40,8,2],[8,1,2],[96,9,6],[84,8,4],[56,5,6],[60,6,4],[104,1,1]]},{"j":"Defender","s":[[42,8,4],[6,1,1],[88,8,8],[94,9,4],[65,6,5],[72,7,2],[92,0,9]]},{"j":"Gladiator","s":[[40,8,2],[18,2,8],[94,9,4],[88,8,8],[59,5,9],[64,6,4],[97,1,1]]},{"j":"White Monk","s":[[32,6,4],[12,1,1],[80,8,1],[76,7,6],[83,8,3],[68,6,8],[108,1,4]]},{"j":"Bishop","s":[[30,6,1],[28,4,6],[72,7,2],[68,6,8],[88,8,8],[76,7,6],[88,0,9]]},{"j":"Templar","s":[[36,7,2],[20,3,2],[92,8,2],[97,9,7],[84,8,4],[72,7,2],[86,0,8]]}],"Moogle":[{"j":"Animist","s":[[36,7,2],[14,2,6],[76,7,6],[88,8,8],[72,7,2],[88,8,8],[100,1,2]]},{"j":"Mog Knight","s":[[35,7,1],[12,3,2],[88,8,8],[96,9,6],[60,6,2],[80,8,3],[98,1,0]]},{"j":"Gunner","s":[[30,6,2],[8,1,1],[68,6,8],[92,9,2],[56,5,6],[80,8,1],[95,1,1]]},{"j":"Thief","s":[[29,5,8],[12,2,2],[73,7,3],[84,8,4],[68,6,8],[76,7,6],[110,1,9]]},{"j":"Juggler","s":[[34,6,8],[16,1,6],[80,8,2],[100,9,9],[64,6,4],[64,6,4],[108,1,7]]},{"j":"Gadgeteer","s":[[35,7,2],[20,2,4],[80,8,2],[96,9,6],[80,8,3],[100,10,2],[90,0,9]]},{"j":"Black Mage","s":[[27,5,4],[28,4,8],[57,5,7],[76,7,6],[84,8,4],[97,9,7],[96,1,1]]},{"j":"Time Mage","s":[[26,5,2],[22,3,6],[56,5,6],[76,7,6],[92,9,2],[94,9,4],[98,1,2]]}],"Viera":[{"j":"Fencer","s":[[38,7,6],[8,1,1],[84,8,4],[80,8,1],[76,7,6],[72,7,2],[110,1,5]]},{"j":"Elementalist","s":[[34,6,8],[18,4,2],[80,8,1],[76,7,6],[88,8,8],[76,7,6],[104,1,1]]},{"j":"Red Mage","s":[[34,6,8],[22,2,6],[81,8,1],[76,7,6],[84,8,4],[76,7,6],[96,1,3]]},{"j":"White Mage","s":[[30,6,2],[31,4,8],[62,6,2],[72,7,2],[88,8,8],[76,7,6],[115,1,2]]},{"j":"Summoner","s":[[28,5,6],[34,6,2],[65,6,5],[64,6,4],[100,10,1],[80,8,4],[90,0,9]]},{"j":"Archer","s":[[36,7,2],[14,1,6],[80,8,1],[68,6,8],[72,7,2],[76,7,6],[112,1,6]]},{"j":"Assassin","s":[[26,5,2],[18,5,2],[88,8,8],[68,6,8],[92,9,2],[72,7,2],[125,2,3]]},{"j":"Sniper","s":[[31,6,2],[10,2,4],[94,9,4],[68,6,8],[76,7,6],[76,7,6],[105,1,8]]}]}}</script>
+<script>
+const D=JSON.parse(document.getElementById('d').textContent),ST=D.stats,ALL=[...ST,'Level','EXP'],$=id=>document.getElementById(id);
+const S={over:{},exp:0,vars:ST.map(()=>'base')},KEY='ffta-stat-tab',CK='ffta-stat-vars';
+
+const DEFAULT_VARS = [
+ {id:'min', label:'Min', pct:95},
+ {id:'base', label:'Base', pct:100},
+ {id:'max', label:'Max', pct:115},
+ {id:'rand', label:'Random', pct:null}
+];
+
+let V = [...DEFAULT_VARS];
+
+try {
+ const stored = JSON.parse(localStorage.getItem(CK));
+ if (Array.isArray(stored) && stored.length > 0) V = stored;
+} catch(e){}
+
+function saveVars(){
+ try{ localStorage.setItem(CK, JSON.stringify(V)); }catch(e){}
+}
+
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const hex=(n,w)=>n.toString(16).toUpperCase().padStart(w,'0');
+const job=()=>D.races[$('race').value][+$('job').value];
+
+function getVarPct(varId, type) {
+ const item = V.find(v => v.id === varId);
+ if (item && typeof item.pct === 'number') return item.pct;
+ const fallback = V.find(v => v.id === type);
+ if (fallback && typeof fallback.pct === 'number') return fallback.pct;
+ return type === 'min' ? 95 : 115;
+}
+
+function calc(s,L,varId){
+ const [b,g,c] = s, n = L - 1;
+ let val;
+ if (varId === 'rand') {
+  val = b + (g + c/10)*n;
+ } else if (varId === 'min') {
+  val = (b + g * n) * getVarPct('min', 'min') / 100;
+ } else if (varId === 'max') {
+  val = (b + (g + (c > 0 ? 1 : 0)) * n) * getVarPct('max', 'max') / 100;
+ } else {
+  const item = V.find(v => v.id === varId);
+  if (item && typeof item.pct === 'number') {
+   val = (b + (g + c/10) * n) * item.pct / 100;
+  } else {
+   val = b + (g + c/10) * n;
+  }
+ }
+ return Math.floor(val);
+}
+
+const level=()=>clamp(parseInt($('lvl').value,10)||1,1,50);
+
+function roll(){
+ S.rng=ST.map((_,i)=>{
+  const s=job().s[i],L=level(),a=calc(s,L,'min'),b=calc(s,L,'max');
+  return[Math.min(a,b),Math.max(a,b)];
+ });
+ S.roll=S.rng.map(([lo,hi])=>lo+Math.floor(Math.random()*(hi-lo+1)));
+}
+
+function info(i){
+ const s=job().s[i], varId=S.vars[i], rand=varId==='rand';
+ const c=rand?S.roll[i]:calc(s,level(),varId), o=S.over[i];
+ const raw=o===undefined?c:o, val=clamp(raw,0,999);
+ return{s,c,val,rand,varId,over:raw>999,edited:o!==undefined&&o!==Math.min(c,999)};
+}
+
+const code=(i,val)=>hex(D.addr[i]+D.step*+$('slot').value,8)+' '+hex(val,4);
+
+function paintX(i,setInput){
+ const el=$('v'+i),lv=i===7,val=lv?level():S.exp,n=$('n'+i);
+ if(setInput)el.value=val;
+ $('m'+i).textContent=lv?'Taken from the Level control (1-50)':'Not in the job data. Enter 0 to 99 (default 0)';
+ $('c'+i).textContent=code(i,val);n.className='note';
+ n.textContent=lv?'Set with the Level control':S.exp?'Edited':'Default value';
+ return false;
+}
+
+function paint(i,setInput){
+ if(i>=7)return paintX(i,setInput);
+ const {s,c,val,rand,over,edited}=info(i), el=$('v'+i), card=el.closest('.card');
+ if(setInput)el.value=val;
+ $('m'+i).textContent=`Base ${s[0]} · Growth ${s[1]} · Bonus ${s[2]*10}%`;
+ $('c'+i).textContent=code(i,val);
+ const n=$('n'+i), w=over||c>999;
+ n.className='note'+(w?' w':'');
+ n.textContent=w?'Over 999: limited to 999 so the game does not break.'
+  :edited?`Edited. Calculated value: ${Math.min(c,999)}`
+  :rand?`Random value between ${S.rng[i][0]} and ${S.rng[i][1]}`
+  :'Calculated value';
+ card.classList.toggle('flag',w);
+ card.classList.toggle('is-rand',rand);
+ return w;
+}
+
+function paintAll(setInput=true){
+ let f=0;
+ ALL.forEach((_,i)=>{ if(paint(i,setInput)) f++; });
+ const j=job();
+ $('sum').textContent=`${$('race').value} ${j.j}, level ${level()}`+(f?` · ${f} stat${f>1?'s':''} limited to 999`:'');
+}
+
+function updateSelects(){
+ ST.forEach((_,i)=>{
+  const sel=$('var'+i);
+  if(!sel)return;
+  const curr = S.vars[i];
+  sel.innerHTML = V.map(v => `<option value="${v.id}"${v.id===curr?' selected':''}>${v.label}</option>`).join('');
+  if(!V.some(v => v.id === S.vars[i])) {
+   S.vars[i] = 'base';
+   sel.value = 'base';
+  }
+ });
+}
+
+function build(){
+ $('cards').innerHTML=ALL.map((n,i)=>{
+  if(i<7){
+   return `<article class="card">
+    <button class="rr" type="button" data-rr="${i}" aria-label="Re-roll ${n}" title="Re-roll ${n}">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg>
+    </button>
+    <h3>${n}</h3>
+    <div class="meta" id="m${i}"></div>
+    <div class="card-grid">
+     <div><label for="v${i}">Value</label><input id="v${i}" type="number" min="0" max="999" step="1" inputmode="numeric"></div>
+     <div><label for="var${i}">Variation</label><select id="var${i}"></select></div>
+    </div>
+    <p class="note" id="n${i}"></p>
+    <div class="code"><code id="c${i}"></code><button class="btn" type="button" data-i="${i}" data-l="Copy">Copy</button></div>
+   </article>`;
+  }
+  return `<article class="card">
+   <h3>${n}</h3>
+   <div class="meta" id="m${i}"></div>
+   <div><label for="v${i}">${n} value</label><input id="v${i}" type="number" min="0" max="${i===7?50:99}" step="1" inputmode="numeric"${i===7?' readonly':''}></div>
+   <p class="note" id="n${i}"></p>
+   <div class="code"><code id="c${i}"></code><button class="btn" type="button" data-i="${i}" data-l="Copy">Copy</button></div>
+  </article>`;
+ }).join('');
+
+ updateSelects();
+
+ ALL.forEach((_,i)=>{
+  const el=$('v'+i);
+  if(i<7){
+   $('var'+i).addEventListener('change', e=>{
+    S.vars[i] = e.target.value;
+    delete S.over[i];
+    paint(i, true);
+   });
+  }
+  if(i===7)return;
+  if(i===8){
+   el.addEventListener('input',()=>{const v=parseInt(el.value,10);if(v>=0){if(v>99)el.value=99;S.exp=Math.min(v,99);paintX(8,false)}});
+   el.addEventListener('change',()=>{const v=parseInt(el.value,10);S.exp=isNaN(v)?0:clamp(v,0,99);paintX(8,true)});
+   return;
+  }
+  el.addEventListener('input',()=>{const v=parseInt(el.value,10);if(isNaN(v)||v<0)return;S.over[i]=v;paint(i,false)});
+  el.addEventListener('change',()=>{const v=parseInt(el.value,10);if(isNaN(v))delete S.over[i];paint(i,true)});
+ });
+}
+
+function fillJobs(){$('job').innerHTML=D.races[$('race').value].map((j,i)=>`<option value="${i}">${j.j}</option>`).join('')}
+function recalc(){S.over={};roll();paintAll()}
+
+async function copy(text,btn){
+ try{await navigator.clipboard.writeText(text)}catch(e){const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove()}
+ const l=btn.dataset.l;btn.textContent='Copied!';clearTimeout(btn._t);btn._t=setTimeout(()=>btn.textContent=l,1200);
+}
+
+$('cards').addEventListener('click',e=>{
+ const rr=e.target.closest('button[data-rr]');
+ if(rr){
+  const i=+rr.dataset.rr, [lo,hi]=S.rng[i];
+  S.roll[i]=lo+Math.floor(Math.random()*(hi-lo+1));
+  delete S.over[i];
+  paint(i, true);
+  return;
+ }
+ const b=e.target.closest('button[data-i]');if(b)copy($('c'+b.dataset.i).textContent,b);
+});
+
+$('all').dataset.l='Copy All';
+$('all').addEventListener('click',e=>copy(ALL.map((_,i)=>$('c'+i).textContent).join('\n'),e.currentTarget));
+$('slot').innerHTML=Array.from({length:24},(_,i)=>`<option value="${i}">P${i+1}</option>`).join('');
+$('race').innerHTML=Object.keys(D.races).map(r=>`<option>${r}</option>`).join('');
+$('race').addEventListener('change',()=>{fillJobs();recalc()});
+['job','slot'].forEach(id=>$(id).addEventListener('change',recalc));
+$('lvl').addEventListener('input',()=>{const v=parseInt($('lvl').value,10);if(v>=1&&v<=50)recalc()});
+$('lvl').addEventListener('change',()=>{$('lvl').value=level();recalc()});
+$('rf').addEventListener('click',e=>{const b=e.currentTarget;b.classList.remove('spin');void b.offsetWidth;b.classList.add('spin');$('lvl').value=level();S.exp=0;recalc()});
+
+function renderVarList(){
+ $('varlist').innerHTML = V.map(v => {
+  const isDefault = DEFAULT_VARS.some(d => d.id === v.id);
+  return `<div class="var-item">
+   <div><strong>${v.label}</strong></div>
+   <div>${v.pct !== null ? v.pct + '%' : 'Range'}</div>
+   <div>${!isDefault ? `<button class="btn danger" type="button" data-del="${v.id}">Delete</button>` : '<span class="meta">Built-in</span>'}</div>
+  </div>`;
+ }).join('');
+}
+
+$('addvarbtn').addEventListener('click', ()=>{
+ const label = $('newvarid').value.trim();
+ const pct = parseFloat($('newvarpct').value);
+ if (!label) { alert('Please enter a variation label.'); return; }
+ if (isNaN(pct) || pct < 1 || pct > 300) { alert('Please enter a valid percentage (1-300).'); return; }
+ const id = 'custom_' + Date.now();
+ V.push({ id, label: `${label} (${pct}%)`, pct });
+ saveVars();
+ renderVarList();
+ updateSelects();
+ paintAll(false);
+ $('newvarid').value = '';
+ $('newvarpct').value = '';
+});
+
+$('varlist').addEventListener('click', e => {
+ const delBtn = e.target.closest('[data-del]');
+ if (delBtn) {
+  const id = delBtn.dataset.del;
+  V = V.filter(v => v.id !== id);
+  saveVars();
+  renderVarList();
+  updateSelects();
+  paintAll(false);
+ }
+});
+
+$('cfd').addEventListener('click', ()=>{
+ V = JSON.parse(JSON.stringify(DEFAULT_VARS));
+ saveVars();
+ renderVarList();
+ updateSelects();
+ recalc();
+});
+
+$('gear').addEventListener('click', ()=>{
+ renderVarList();
+ $('cfgd').showModal();
+});
+$('cfgd').addEventListener('click',e=>{if(e.target===$('cfgd')||e.target.closest('[data-close]'))$('cfgd').close()});
+
+fillJobs();roll();build();paintAll();
+
+// name code
+const N=JSON.parse($('nd').textContent),NM=N.names,esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NS={k:0,d:1,pick:null};
+$('nchar').innerHTML=N.lines.map(l=>`<option value="${l[0]}">Character ${l[0]}</option>`).join('');
+
+function nameRows(){
+ const q=$('nq').value.trim().toLowerCase(),g=$('ng').value;
+ const a=NM.map((r,i)=>[...r,i]).filter(r=>(!g||r[2]===g)&&(!q||r[1].toLowerCase().includes(q)||r[0].toLowerCase().includes(q)));
+ const k=NS.k;a.sort((x,y)=>{const c=k===0?parseInt(x[0],16)-parseInt(y[0],16):x[k].toLowerCase().localeCompare(y[k].toLowerCase());return c*NS.d||x[3]-y[3]});
+ return a;
+}
+
+function nameTable(){
+ const a=nameRows();
+ $('nb').innerHTML=a.length?a.map(r=>`<tr data-i="${r[3]}"${NS.pick===r[3]?' class="sel"':''}><td class="mono">${r[0]}</td><td>${esc(r[1])}</td><td>${r[2]}</td><td class="act"><button class="btn use" type="button" data-i="${r[3]}" aria-label="Use ${esc(r[1])}">Use</button></td></tr>`).join(''):'<tr><td colspan="4" style="white-space:normal;color:var(--mute)">No names match.</td></tr>';
+ $('ncnt').textContent=`Showing ${a.length} of ${NM.length} names`;
+ [0,1,2].forEach(i=>{$('h'+i).setAttribute('aria-sort',i===NS.k?(NS.d>0?'ascending':'descending'):'none');$('h'+i).querySelector('i').textContent=i===NS.k?(NS.d>0?'\u25B2':'\u25BC'):''});
+}
+
+function nameCode(){
+ if(NS.pick===null)return;
+ const n=NM[NS.pick],l=N.lines.find(x=>x[0]===+$('nchar').value);
+ $('nname').textContent=n[1];$('ncode').textContent=`Name code ${n[0]} · ${n[2]}`;
+ $('nlines').innerHTML=[l[1].replace('????',n[0]),l[2],l[3]].map(t=>`<code>${t}</code>`).join('');$('nout').hidden=false;
+}
+
+document.querySelector('#p1 thead').addEventListener('click',e=>{const b=e.target.closest('.sort');if(!b)return;const k=+b.dataset.k;NS.d=NS.k===k?-NS.d:1;NS.k=k;nameTable()});
+$('nb').addEventListener('click',e=>{const b=e.target.closest('.use');if(!b)return;NS.pick=+b.dataset.i;nameTable();nameCode();$('nout').scrollIntoView({block:'nearest',behavior:'smooth'})});
+$('nq').addEventListener('input',nameTable);$('ng').addEventListener('change',nameTable);$('nchar').addEventListener('change',nameCode);
+$('ncopy').addEventListener('click',e=>copy([...document.querySelectorAll('#nlines code')].map(c=>c.textContent).join('\n'),e.currentTarget));
+nameTable();
+
+// tabs
+const tabs=[$('t0'),$('t1')];
+function show(k,focus){
+ $('gear').hidden=k!==0;
+ tabs.forEach((t,i)=>{const on=i===k;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1;$('p'+i).hidden=!on});
+ if(focus)tabs[k].focus();
+ try{localStorage.setItem(KEY,k)}catch(e){}
+}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>show(i));t.addEventListener('keydown',e=>{
+ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();show((i+(e.key==='ArrowRight'?1:-1)+2)%2,true)}
+})});
+let last=0;try{last=+localStorage.getItem(KEY)||0}catch(e){}
+show(last===1?1:0);
+</script>
+</body>
+</html>

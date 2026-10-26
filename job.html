@@ -1,0 +1,3539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFTA Stat Growth & Skill Database</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">⚔</span>
+                <div>
+                    <h1 class="text-xl font-bold text-amber-400">FFTA Stat Growth & Skill Database</h1>
+                    <p class="text-xs text-slate-400">Final Fantasy Tactics Advance • Stat & Skill Explorer</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="tab-lookup-btn" onclick="switchTab('lookup')"
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow hover:bg-amber-400 transition">
+                    Database</button>
+                <button id="tab-sim-btn" onclick="switchTab('sim')"
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">
+                    Simulator</button>
+                <button id="tab-compare-btn" onclick="switchTab('compare')"
+                    class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">Compare
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+
+        <!-- VIEW 1: JOB STAT & SKILL LOOKUP -->
+        <section id="view-lookup" class="space-y-6">
+            <!-- Controls -->
+            <div
+                class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <!-- <label class="text-sm font-medium text-slate-300">Select Race:</label> -->
+
+                </div>
+                <div class="flex items-center gap-3">
+                    <!-- <label class="text-sm font-medium text-slate-300">Select Job:</label> -->
+                    <select id="race-select" onchange="onRaceChange()"
+                        class="bg-slate-800 text-amber-300 font-semibold px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-amber-500">
+                    </select>
+                    <select id="job-select" onchange="onJobChange()"
+                        class="bg-slate-800 text-amber-300 font-semibold px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-amber-500">
+                    </select>
+                </div>
+            </div>
+
+            <!-- 2-Column Layout: Stat Card (Table + Radar) & Skill Card -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+                <!-- CARD 1: STAT DATA & EMBEDDED RADAR CHART -->
+                <div
+                    class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg space-y-5 flex flex-col justify-start">
+                    <!-- Header with Toggle Button -->
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <h2 id="job-title" class="text-xl font-bold text-amber-400">Hume - Soldier</h2>
+                            <span id="job-race-badge" class="hidden">Hume</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <span id="spd-highlight" class="hidden">1.1 SPD</span>
+                            </div>
+                            <!-- Toggle Button -->
+                            <button onclick="toggleCard('stat-card-body', this)"
+                                class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 text-xs font-semibold rounded-md transition flex items-center gap-1 shadow">
+                                <span>👁</span> <span class="btn-text">Hide</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Stat Body -->
+                    <div id="stat-card-body" class="space-y-5">
+                        <!-- Stat Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-800 text-slate-400 uppercase tracking-wider">
+                                    <tr>
+                                        <th class="py-2.5 px-3">Stat</th>
+                                        <th class="py-2.5 px-2 text-center">Base</th>
+                                        <th class="py-2.5 px-2 text-center">Growth</th>
+                                        <th class="py-2.5 px-2 text-center">Bonus</th>
+                                        <th class="py-2.5 px-2 text-center">Avg/Lv</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stat-table-body" class="divide-y divide-slate-800 text-slate-200">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Embedded Relative Stat Radar Chart Inside Stat Card -->
+                        <div class="pt-4 border-t border-slate-800 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Relative Stat
+                                    Rating</h3>
+                                <span class="text-[10px] text-amber-400 font-medium">Scaled 0-100%</span>
+                            </div>
+                            <div class="relative w-full h-60">
+                                <canvas id="job-radar-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: SKILL LIST -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg space-y-3 flex flex-col">
+                    <!-- Header with Filter & Toggle Button -->
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <h3
+                            class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <span>Skills</span>
+                            <span id="skill-count-badge"
+                                class="text-xs bg-slate-800 text-amber-400 px-2 py-0.5 rounded-full border border-slate-700">0</span>
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <div id="skill-type-filter" class="flex gap-1 text-[10px]">
+                                <button onclick="filterSkills('All')"
+                                    class="px-2 py-1 rounded bg-amber-500 text-slate-950 font-bold shadow">All</button>
+                                <button onclick="filterSkills('Action')"
+                                    class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Action</button>
+                                <button onclick="filterSkills('Support')"
+                                    class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Support</button>
+                                <button onclick="filterSkills('Reaction')"
+                                    class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Reaction</button>
+                            </div>
+                            <!-- Toggle Button -->
+                            <!-- <button onclick="toggleCard('skill-card-body', this)"
+                                class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400 text-xs font-semibold rounded-md transition flex items-center gap-1 shadow">
+                                <span>👁</span> <span class="btn-text">Hide</span>
+                            </button> -->
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Skill Body -->
+                    <div id="skill-card-body" class="flex flex-col space-y-2">
+                        <div id="skills-container" class="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VIEW 2: LEVEL-UP SIMULATOR -->
+        <section id="view-sim" class="space-y-6 hidden">
+            <!-- Sim Controls -->
+            <div
+                class="bg-slate-900 p-5 rounded-xl border border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">RACE</label>
+                    <select id="sim-race" onchange="onSimRaceChange()"
+                        class="w-full bg-slate-800 text-slate-200 p-2.5 rounded-lg border border-slate-700">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">JOB</label>
+                    <select id="sim-job"
+                        class="w-full bg-slate-800 text-slate-200 p-2.5 rounded-lg border border-slate-700">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">TARGET LEVEL (1-50)</label>
+                    <input type="number" id="sim-level" min="1" max="50" value="50"
+                        class="w-full bg-slate-800 text-slate-200 p-2.5 rounded-lg border border-slate-700">
+                </div>
+                <div>
+                    <button onclick="runSimulation()"
+                        class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 px-4 rounded-lg shadow transition">
+                        ⚡ Run Simulation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Results -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Summary Stats -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg space-y-4">
+                    <h3
+                        class="text-md font-bold text-amber-400 border-b border-slate-800 pb-2 flex items-center justify-between">
+                        <span>Expected Stats at Level <span id="res-target-lv">50</span></span>
+                        <span class="text-xs text-slate-400 font-normal">(1,000 Sims)</span>
+                    </h3>
+                    <div id="sim-results-grid" class="space-y-3">
+                    </div>
+                </div>
+
+                <!-- Simulation Charts -->
+                <div class="lg:col-span-2 bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg flex flex-col">
+                    <h3 class="text-md font-bold text-slate-200 mb-4">Stat Growth Progression (Lv 1 - Target)</h3>
+                    <div class="relative w-full flex-grow min-h-[300px]">
+                        <canvas id="sim-progression-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: COMPARE JOBS -->
+        <section id="view-compare" class="space-y-6 hidden">
+            <div class="bg-slate-900 p-5 rounded-xl border border-slate-800">
+                <h3 class="text-md font-bold text-amber-400 mb-4">Compare Average Stat Growth Between Two Jobs</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                        <label class="block text-xs text-slate-400 font-bold mb-1">JOB 1</label>
+                        <div class="flex gap-2">
+                            <select id="cmp-race-1" onchange="onCmpRaceChange(1)"
+                                class="w-1/2 bg-slate-800 text-slate-200 p-2 rounded border border-slate-700 text-sm"></select>
+                            <select id="cmp-job-1" onchange="renderComparison()"
+                                class="w-1/2 bg-slate-800 text-slate-200 p-2 rounded border border-slate-700 text-sm"></select>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+                        <label class="block text-xs text-slate-400 font-bold mb-1">JOB 2</label>
+                        <div class="flex gap-2">
+                            <select id="cmp-race-2" onchange="onCmpRaceChange(2)"
+                                class="w-1/2 bg-slate-800 text-slate-200 p-2 rounded border border-slate-700 text-sm"></select>
+                            <select id="cmp-job-2" onchange="renderComparison()"
+                                class="w-1/2 bg-slate-800 text-slate-200 p-2 rounded border border-slate-700 text-sm"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-lg">
+                <div class="relative w-full h-[380px]">
+                    <canvas id="compare-bar-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FFTA Data directly parsed from FFTA stat growth.xlsx & FFTA skill.csv -->
+    <script>
+        const fftaData = {
+            "Hume": {
+                "Soldier": {"HP": [40, 8, 4], "MP": [14, 1, 1], "ATK": [88, 8, 8], "DEF": [88, 8, 8], "MAG": [60, 6, 0], "RES": [72, 7, 2], "SPD": [100, 1, 1]},
+                "Paladin": {"HP": [38, 7, 6], "MP": [22, 2, 2], "ATK": [80, 8, 1], "DEF": [92, 9, 2], "MAG": [72, 7, 2], "RES": [88, 8, 8], "SPD": [98, 0, 8]},
+                "Fighter": {"HP": [36, 7, 2], "MP": [12, 1, 1], "ATK": [92, 9, 2], "DEF": [80, 8, 1], "MAG": [56, 5, 6], "RES": [68, 6, 8], "SPD": [104, 1, 1]},
+                "Thief": {"HP": [33, 6, 6], "MP": [15, 1, 1], "ATK": [76, 7, 6], "DEF": [76, 7, 6], "MAG": [76, 7, 6], "RES": [64, 6, 4], "SPD": [110, 1, 8]},
+                "Ninja": {"HP": [29, 5, 8], "MP": [21, 2, 1], "ATK": [84, 8, 4], "DEF": [72, 7, 2], "MAG": [80, 8, 1], "RES": [76, 7, 6], "SPD": [120, 2, 1]},
+                "White Mage": {"HP": [30, 6, 1], "MP": [40, 4, 8], "ATK": [60, 6, 2], "DEF": [73, 7, 3], "MAG": [84, 8, 4], "RES": [80, 8, 2], "SPD": [108, 1, 2]},
+                "Black Mage": {"HP": [28, 5, 6], "MP": [36, 4, 4], "ATK": [64, 6, 4], "DEF": [68, 6, 8], "MAG": [88, 8, 8], "RES": [96, 9, 6], "SPD": [96, 1, 1]},
+                "Illusionist": {"HP": [26, 5, 2], "MP": [38, 7, 1], "ATK": [60, 6, 1], "DEF": [64, 6, 4], "MAG": [92, 9, 2], "RES": [84, 8, 4], "SPD": [89, 0, 9]},
+                "Blue Mage": {"HP": [34, 6, 8], "MP": [30, 3, 6], "ATK": [80, 8, 1], "DEF": [84, 8, 4], "MAG": [84, 8, 4], "RES": [92, 9, 2], "SPD": [100, 1, 2]},
+                "Archer": {"HP": [36, 7, 2], "MP": [18, 1, 1], "ATK": [72, 7, 2], "DEF": [72, 7, 2], "MAG": [64, 6, 4], "RES": [80, 8, 1], "SPD": [106, 1, 4]},
+                "Hunter": {"HP": [34, 6, 8], "MP": [26, 3, 2], "ATK": [88, 8, 8], "DEF": [68, 6, 8], "MAG": [68, 6, 8], "RES": [84, 8, 4], "SPD": [112, 1, 7]}
+            },
+            "Numou": {
+                "White Mage": {"HP": [29, 5, 8], "MP": [52, 5, 6], "ATK": [57, 5, 7], "DEF": [73, 7, 3], "MAG": [88, 8, 8], "RES": [84, 8, 4], "SPD": [108, 1, 1]},
+                "Black Mage": {"HP": [27, 5, 4], "MP": [42, 5, 2], "ATK": [62, 6, 2], "DEF": [68, 6, 8], "MAG": [92, 9, 2], "RES": [100, 10, 2], "SPD": [96, 0, 9]},
+                "Time Mage": {"HP": [26, 5, 2], "MP": [36, 3, 6], "ATK": [56, 5, 6], "DEF": [68, 6, 8], "MAG": [100, 10, 2], "RES": [96, 9, 6], "SPD": [98, 1, 2]},
+                "Illusionist": {"HP": [25, 5, 1], "MP": [46, 7, 6], "ATK": [57, 5, 7], "DEF": [64, 6, 4], "MAG": [96, 9, 6], "RES": [88, 8, 8], "SPD": [89, 0, 8]},
+                "Alchemist": {"HP": [30, 6, 1], "MP": [48, 8, 4], "ATK": [59, 5, 9], "DEF": [65, 6, 5], "MAG": [92, 9, 2], "RES": [96, 9, 6], "SPD": [92, 0, 9]},
+                "Beastmaster": {"HP": [37, 7, 4], "MP": [22, 2, 1], "ATK": [88, 8, 8], "DEF": [88, 8, 8], "MAG": [68, 6, 8], "RES": [84, 8, 4], "SPD": [104, 1, 2]},
+                "Morpher": {"HP": [34, 6, 8], "MP": [32, 2, 8], "ATK": [70, 7, 1], "DEF": [80, 8, 2], "MAG": [76, 7, 6], "RES": [80, 8, 1], "SPD": [110, 1, 6]},
+                "Sage": {"HP": [38, 7, 6], "MP": [38, 8, 8], "ATK": [84, 8, 4], "DEF": [76, 7, 6], "MAG": [92, 9, 2], "RES": [76, 7, 6], "SPD": [85, 0, 8]}
+            },
+            "Bangaa": {
+                "Warrior": {"HP": [46, 9, 2], "MP": [10, 2, 1], "ATK": [92, 9, 2], "DEF": [84, 8, 4], "MAG": [62, 6, 2], "RES": [68, 6, 8], "SPD": [95, 0, 9]},
+                "Dragoon": {"HP": [40, 8, 2], "MP": [8, 1, 2], "ATK": [96, 9, 6], "DEF": [84, 8, 4], "MAG": [56, 5, 6], "RES": [60, 6, 4], "SPD": [104, 1, 1]},
+                "Defender": {"HP": [42, 8, 4], "MP": [6, 1, 1], "ATK": [88, 8, 8], "DEF": [94, 9, 4], "MAG": [65, 6, 5], "RES": [72, 7, 2], "SPD": [92, 0, 9]},
+                "Gladiator": {"HP": [40, 8, 2], "MP": [18, 2, 8], "ATK": [94, 9, 4], "DEF": [88, 8, 8], "MAG": [59, 5, 9], "RES": [64, 6, 4], "SPD": [97, 1, 1]},
+                "White Monk": {"HP": [32, 6, 4], "MP": [12, 1, 1], "ATK": [80, 8, 1], "DEF": [76, 7, 6], "MAG": [83, 8, 3], "RES": [68, 6, 8], "SPD": [108, 1, 4]},
+                "Bishop": {"HP": [30, 6, 1], "MP": [28, 4, 6], "ATK": [72, 7, 2], "DEF": [68, 6, 8], "MAG": [88, 8, 8], "RES": [76, 7, 6], "SPD": [88, 0, 9]},
+                "Templar": {"HP": [36, 7, 2], "MP": [20, 3, 2], "ATK": [92, 8, 2], "DEF": [97, 9, 7], "MAG": [84, 8, 4], "RES": [72, 7, 2], "SPD": [86, 0, 8]}
+            },
+            "Moogle": {
+                "Animist": {"HP": [36, 7, 2], "MP": [14, 2, 6], "ATK": [76, 7, 6], "DEF": [88, 8, 8], "MAG": [72, 7, 2], "RES": [88, 8, 8], "SPD": [100, 1, 2]},
+                "Mog Knight": {"HP": [35, 7, 1], "MP": [12, 3, 2], "ATK": [88, 8, 8], "DEF": [96, 9, 6], "MAG": [60, 6, 2], "RES": [80, 8, 3], "SPD": [98, 1, 0]},
+                "Gunner": {"HP": [30, 6, 2], "MP": [8, 1, 1], "ATK": [68, 6, 8], "DEF": [92, 9, 2], "MAG": [56, 5, 6], "RES": [80, 8, 1], "SPD": [95, 1, 1]},
+                "Thief": {"HP": [29, 5, 8], "MP": [12, 2, 2], "ATK": [73, 7, 3], "DEF": [84, 8, 4], "MAG": [68, 6, 8], "RES": [76, 7, 6], "SPD": [110, 1, 9]},
+                "Juggler": {"HP": [34, 6, 8], "MP": [16, 1, 6], "ATK": [80, 8, 2], "DEF": [100, 9, 9], "MAG": [64, 6, 4], "RES": [64, 6, 4], "SPD": [108, 1, 7]},
+                "Gadgeteer": {"HP": [35, 7, 2], "MP": [20, 2, 4], "ATK": [80, 8, 2], "DEF": [96, 9, 6], "MAG": [80, 8, 3], "RES": [100, 10, 2], "SPD": [90, 0, 9]},
+                "Black Mage": {"HP": [27, 5, 4], "MP": [28, 4, 8], "ATK": [57, 5, 7], "DEF": [76, 7, 6], "MAG": [84, 8, 4], "RES": [97, 9, 7], "SPD": [96, 1, 1]},
+                "Time Mage": {"HP": [26, 5, 2], "MP": [22, 3, 6], "ATK": [56, 5, 6], "DEF": [76, 7, 6], "MAG": [92, 9, 2], "RES": [94, 9, 4], "SPD": [98, 1, 2]}
+            },
+            "Viera": {
+                "Fencer": {"HP": [38, 7, 6], "MP": [8, 1, 1], "ATK": [84, 8, 4], "DEF": [80, 8, 1], "MAG": [76, 7, 6], "RES": [72, 7, 2], "SPD": [110, 1, 5]},
+                "Elementalist": {"HP": [34, 6, 8], "MP": [18, 4, 2], "ATK": [80, 8, 1], "DEF": [76, 7, 6], "MAG": [88, 8, 8], "RES": [76, 7, 6], "SPD": [104, 1, 1]},
+                "Red Mage": {"HP": [34, 6, 8], "MP": [22, 2, 6], "ATK": [81, 8, 1], "DEF": [76, 7, 6], "MAG": [84, 8, 4], "RES": [76, 7, 6], "SPD": [96, 1, 3]},
+                "White Mage": {"HP": [30, 6, 2], "MP": [31, 4, 8], "ATK": [62, 6, 2], "DEF": [72, 7, 2], "MAG": [88, 8, 8], "RES": [76, 7, 6], "SPD": [115, 1, 2]},
+                "Summoner": {"HP": [28, 5, 6], "MP": [34, 6, 2], "ATK": [65, 6, 5], "DEF": [64, 6, 4], "MAG": [100, 10, 1], "RES": [80, 8, 4], "SPD": [90, 0, 9]},
+                "Archer": {"HP": [36, 7, 2], "MP": [14, 1, 6], "ATK": [80, 8, 1], "DEF": [68, 6, 8], "MAG": [72, 7, 2], "RES": [76, 7, 6], "SPD": [112, 1, 6]},
+                "Assassin": {"HP": [26, 5, 2], "MP": [18, 5, 2], "ATK": [88, 8, 8], "DEF": [68, 6, 8], "MAG": [92, 9, 2], "RES": [72, 7, 2], "SPD": [125, 2, 3]},
+                "Sniper": {"HP": [31, 6, 2], "MP": [10, 2, 4], "ATK": [94, 9, 4], "DEF": [68, 6, 8], "MAG": [76, 7, 6], "RES": [76, 7, 6], "SPD": [105, 1, 8]}
+            }
+        };
+
+        const fftaSkills = {
+            "Soldier": [
+                {
+                    "type": "Action",
+                    "name": "First Aid",
+                    "item": "Shortsword",
+                    "ap": "100",
+                    "desc": "Cure HP and status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Powerbreak",
+                    "item": "Barong",
+                    "ap": "200",
+                    "desc": "Lower target's weapon attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mindbreak",
+                    "item": "Buster Sword",
+                    "ap": "200",
+                    "desc": "Lower target's magic"
+                },
+                {
+                    "type": "Action",
+                    "name": "Magicbreak",
+                    "item": "Ancient Sword",
+                    "ap": "200",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Speedbreak",
+                    "item": "Silver Sword",
+                    "ap": "200",
+                    "desc": "Lower target's speed"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mug",
+                    "item": "Diamond Sword",
+                    "ap": "300",
+                    "desc": "Damages target and steals carried gil"
+                },
+                {
+                    "type": "Action",
+                    "name": "Provoke",
+                    "item": "Blood Sword",
+                    "ap": "300",
+                    "desc": "Cause Berserk status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Sensor",
+                    "item": "Burglar Sword",
+                    "ap": "300",
+                    "desc": "Find hidden equipment on enemy"
+                },
+                {
+                    "type": "Support",
+                    "name": "Monkey Grip",
+                    "item": "Vigilante",
+                    "ap": "300",
+                    "desc": "Hold two-handed weapon with one hand"
+                },
+                {
+                    "type": "Support",
+                    "name": "Shieldbearer",
+                    "item": "Bronze Shield",
+                    "ap": "300",
+                    "desc": "Equip a shield no matter what job"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Combat Combo",
+                    "item": "Mythril Sword",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Paladin": [
+                {
+                    "type": "Action",
+                    "name": "Nurse",
+                    "item": "Defender",
+                    "ap": "100",
+                    "desc": "Cure HP and status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Defense",
+                    "item": "Lionheart",
+                    "ap": "200",
+                    "desc": "Raise Defence and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cover",
+                    "item": "SaveTheQueen",
+                    "ap": "100",
+                    "desc": "Take damage for a clan member"
+                },
+                {
+                    "type": "Action",
+                    "name": "Subdue",
+                    "item": "Ancient Sword",
+                    "ap": "100",
+                    "desc": "Low damage attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Drop Weapon",
+                    "item": "Ragnarok",
+                    "ap": "200",
+                    "desc": "Disarm target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Parley",
+                    "item": "Barong",
+                    "ap": "200",
+                    "desc": "Remove weakened monsters from battle"
+                },
+                {
+                    "type": "Action",
+                    "name": "Saint Cross",
+                    "item": "Arch Sword",
+                    "ap": "300",
+                    "desc": "Holy damage in a cross-shaped area"
+                },
+                {
+                    "type": "Action",
+                    "name": "Holy Blade",
+                    "item": "Excalibur",
+                    "ap": "300",
+                    "desc": "Heavy holy damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Reflex",
+                    "item": "Genji Armor",
+                    "ap": "300",
+                    "desc": "Completely dodge attacks"
+                },
+                {
+                    "type": "Support",
+                    "name": "Weapon Def+",
+                    "item": "Diamond Armor",
+                    "ap": "300",
+                    "desc": "Raises Weapon Defence"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Knight Combo",
+                    "item": "Mythril Brand",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Fighter": [
+                {
+                    "type": "Action",
+                    "name": "Rush",
+                    "item": "Sweep Blade",
+                    "ap": "100",
+                    "desc": "Damage and push back target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wild Swing",
+                    "item": "Ogun Blade",
+                    "ap": "200",
+                    "desc": "Damage all adjacent units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Beatdown",
+                    "item": "Shadow Blade",
+                    "ap": "200",
+                    "desc": "Double damage, halved accuracy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blitz",
+                    "item": "Sun Blade",
+                    "ap": "200",
+                    "desc": "Double accuracy,halved damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Air Render",
+                    "item": "Atmos Blade",
+                    "ap": "200",
+                    "desc": "Wide ranged attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Far Fist",
+                    "item": "Kwigon Blade",
+                    "ap": "200",
+                    "desc": "Wide ranged area damage attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Air Blast",
+                    "item": "Air Blade",
+                    "ap": "300",
+                    "desc": "Wind area damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Backdraft",
+                    "item": "Flametongue",
+                    "ap": "300",
+                    "desc": "Fire area damage, causes self damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Bonecrusher",
+                    "item": "Ninja Gear",
+                    "ap": "300",
+                    "desc": "Counter with 1.5 times damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Strikeback",
+                    "item": "Wygar",
+                    "ap": "300",
+                    "desc": "Block attack and counter"
+                },
+                {
+                    "type": "Support",
+                    "name": "Doublehand",
+                    "item": "Venus Blade",
+                    "ap": "300",
+                    "desc": "Hold sword with two hands"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Fight Combo",
+                    "item": "Mythril Blade",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Thief": [
+                {
+                    "type": "Action",
+                    "name": "Steal:Armor",
+                    "item": "Rondell Dagger",
+                    "ap": "200",
+                    "desc": "Steal enemy's armor"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Shield",
+                    "item": "Scramasax",
+                    "ap": "200",
+                    "desc": "Steal enemy's shield"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Access",
+                    "item": "Jambiya",
+                    "ap": "300",
+                    "desc": "Steal enemy's accessory"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Helm",
+                    "item": "Kard",
+                    "ap": "100",
+                    "desc": "Steal enemy's helmet"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Weapon",
+                    "item": "Sword Breaker",
+                    "ap": "300",
+                    "desc": "Steal enemy's weapon"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Gil",
+                    "item": "Jack Knife",
+                    "ap": "100",
+                    "desc": "Steal Gil from an enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:EXP",
+                    "item": "Khukuri",
+                    "ap": "100",
+                    "desc": "Steal EXP from an enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:JP",
+                    "item": "Orichalcum",
+                    "ap": "200",
+                    "desc": "Steal JP from an enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Steal:Ability",
+                    "item": "Cinquedea",
+                    "ap": "300",
+                    "desc": "Steal an ability from an enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Counter",
+                    "item": "Brigandine",
+                    "ap": "300",
+                    "desc": "Counter an enemy's attack"
+                },
+                {
+                    "type": "Support",
+                    "name": "Maintenance",
+                    "item": "Adaman Vest",
+                    "ap": "300",
+                    "desc": "Prevent equipment from being stolen/broken"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Thief Combo",
+                    "item": "Mythril Knife",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Ninja": [
+                {
+                    "type": "Action",
+                    "name": "Throw",
+                    "item": "Ninja Knife",
+                    "ap": "100",
+                    "desc": "Throw an item from your inventory"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wood Veil",
+                    "item": "Kotetsu",
+                    "ap": "200",
+                    "desc": "Damage and immobilise"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fire Veil",
+                    "item": "Ashura",
+                    "ap": "200",
+                    "desc": "Fire damage and confuse"
+                },
+                {
+                    "type": "Action",
+                    "name": "Earth Veil",
+                    "item": "Osafune",
+                    "ap": "200",
+                    "desc": "Earth damage and Slow"
+                },
+                {
+                    "type": "Action",
+                    "name": "Metal Veil",
+                    "item": "Kikuichimonji",
+                    "ap": "200",
+                    "desc": "Damage and Darkness"
+                },
+                {
+                    "type": "Action",
+                    "name": "Water Veil",
+                    "item": "Murasame",
+                    "ap": "200",
+                    "desc": "Water damage and Silence"
+                },
+                {
+                    "type": "Action",
+                    "name": "Unspell",
+                    "item": "Heaven's Cloud",
+                    "ap": "300",
+                    "desc": "Nullify Magic effect"
+                },
+                {
+                    "type": "Action",
+                    "name": "Oblivion",
+                    "item": "Masamune",
+                    "ap": "300",
+                    "desc": "Inflict Addle status ailment"
+                },
+                {
+                    "type": "Support",
+                    "name": "Last Haste",
+                    "item": "Ninja Gear",
+                    "ap": "300",
+                    "desc": "Haste status when critical"
+                },
+                {
+                    "type": "Support",
+                    "name": "Double Sword",
+                    "item": "Nosada",
+                    "ap": "999",
+                    "desc": "Equip a weapon in each hand"
+                }
+            ],
+            "White Mage": [
+                {
+                    "type": "Action",
+                    "name": "Cure",
+                    "item": "White Staff",
+                    "ap": "100",
+                    "desc": "Recover a little HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cura",
+                    "item": "Cure Staff",
+                    "ap": "200",
+                    "desc": "Recover some HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Curaga",
+                    "item": "Spring Staff",
+                    "ap": "300",
+                    "desc": "Recover a lot of HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Esuna",
+                    "item": "Pure Staff",
+                    "ap": "200",
+                    "desc": "Cure status ailments"
+                },
+                {
+                    "type": "Action",
+                    "name": "Life",
+                    "item": "Bless Staff",
+                    "ap": "200",
+                    "desc": "Revive KO'd unit with half HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Full-Life",
+                    "item": "Nirvana Staff",
+                    "ap": "300",
+                    "desc": "Revive Ko'd unit with full HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Auto-Life",
+                    "item": "Cheer Staff",
+                    "ap": "200",
+                    "desc": "Casts Reraise status on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Shell",
+                    "item": "Judge Staff",
+                    "ap": "200",
+                    "desc": "Raises Magic Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Protect",
+                    "item": "Guard Staff",
+                    "ap": "200",
+                    "desc": "Raises Weapon Defence"
+                },
+                {
+                    "type": "Support",
+                    "name": "Turbo MP",
+                    "item": "White Robe",
+                    "ap": "300",
+                    "desc": "Use double MP but raise power"
+                },
+                {
+                    "type": "Combo",
+                    "name": "White Combo",
+                    "item": "Mythril Staff",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Black Mage": [
+                {
+                    "type": "Action",
+                    "name": "Fire",
+                    "item": "Rod",
+                    "ap": "100",
+                    "desc": "Weak fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fira",
+                    "item": "Firewheel Rod",
+                    "ap": "200",
+                    "desc": "Average fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Firaga",
+                    "item": "Flame Rod",
+                    "ap": "300",
+                    "desc": "Strong fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Thunder",
+                    "item": "Rod",
+                    "ap": "100",
+                    "desc": "Weak thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Thundara",
+                    "item": "Thunder Rod",
+                    "ap": "200",
+                    "desc": "Average thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Thundaga",
+                    "item": "Thor Rod",
+                    "ap": "300",
+                    "desc": "Strong thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blizzard",
+                    "item": "Rod",
+                    "ap": "100",
+                    "desc": "Weak ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blizzara",
+                    "item": "Sleet Rod",
+                    "ap": "200",
+                    "desc": "Average ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blizzaga",
+                    "item": "Chill Rod",
+                    "ap": "300",
+                    "desc": "Strong ice damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Return Magic",
+                    "item": "Black Robe",
+                    "ap": "300",
+                    "desc": "Counter Magic with Magic"
+                },
+                {
+                    "type": "Support",
+                    "name": "Geomancy",
+                    "item": "Sage Robe",
+                    "ap": "300",
+                    "desc": "Increases elemental power"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Black Combo",
+                    "item": "Mythril Rod",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Illusionist": [
+                {
+                    "type": "Action",
+                    "name": "Prominence",
+                    "item": "Firewheel Rod",
+                    "ap": "100",
+                    "desc": "Fire damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Tempest",
+                    "item": "Thunder Rod",
+                    "ap": "100",
+                    "desc": "Thunder damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Freezeblink",
+                    "item": "Sleet Rod",
+                    "ap": "100",
+                    "desc": "Ice damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Star Cross",
+                    "item": "Princess Rod",
+                    "ap": "300",
+                    "desc": "Holy damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Stardust",
+                    "item": "Stardust Rod",
+                    "ap": "300",
+                    "desc": "Damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Deluge",
+                    "item": "Chill Rod",
+                    "ap": "300",
+                    "desc": "Water damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Soil Evidence",
+                    "item": "Terre Rod",
+                    "ap": "200",
+                    "desc": "Earth damage to all enemies"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wild Tornado",
+                    "item": "Thor Rod",
+                    "ap": "200",
+                    "desc": "Wind damage to all enemies"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Absorb MP",
+                    "item": "Lordly Robe",
+                    "ap": "300",
+                    "desc": "Absorb MP used by enemy's attack"
+                },
+                {
+                    "type": "Support",
+                    "name": "Half MP",
+                    "item": "Light Robe",
+                    "ap": "300",
+                    "desc": "Half MP usage when casting Magic"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Spell Combo",
+                    "item": "Mythril Rod",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Blue Mage": [
+                {
+                    "type": "Action",
+                    "name": "Goblin Punch",
+                    "item": "Goblin",
+                    "ap": "",
+                    "desc": "Random damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Magic Hammer",
+                    "item": "Red Cap",
+                    "ap": "",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Acid",
+                    "item": "All Flan",
+                    "ap": "",
+                    "desc": "Inflict a random status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blowup",
+                    "item": "All Bombs",
+                    "ap": "",
+                    "desc": "Sacrifice unit to cause major damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mighty Guard",
+                    "item": "Icedrake",
+                    "ap": "",
+                    "desc": "Raise Defence and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Guard-Off",
+                    "item": "Firewyrm",
+                    "ap": "",
+                    "desc": "Lower Defence and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Dragon Force",
+                    "item": "Thundrake",
+                    "ap": "",
+                    "desc": "Raise Weapon Attack and Magic"
+                },
+                {
+                    "type": "Action",
+                    "name": "Night",
+                    "item": "Lamia",
+                    "ap": "",
+                    "desc": "Cast sleep on all units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Twister",
+                    "item": "Lilith",
+                    "ap": "",
+                    "desc": "Half targets' HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "L3 Def Less",
+                    "item": "Antlion",
+                    "ap": "",
+                    "desc": "Lower Defence and Resistance lvl/3"
+                },
+                {
+                    "type": "Action",
+                    "name": "Matra Magic",
+                    "item": "Blade Biter",
+                    "ap": "",
+                    "desc": "Switch MP and HP levels"
+                },
+                {
+                    "type": "Action",
+                    "name": "Poison Claw",
+                    "item": "Red Panther",
+                    "ap": "",
+                    "desc": "Damage and poison"
+                },
+                {
+                    "type": "Action",
+                    "name": "Hastebreak",
+                    "item": "Coeurl",
+                    "ap": "",
+                    "desc": "Slow or Stop if hasted"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bad Breath",
+                    "item": "Malboro",
+                    "ap": "",
+                    "desc": "Inflict multiple status ailments"
+                },
+                {
+                    "type": "Action",
+                    "name": "Stare",
+                    "item": "Floateye",
+                    "ap": "",
+                    "desc": "Inflicts Confuse status ailment from front"
+                },
+                {
+                    "type": "Action",
+                    "name": "Roulette",
+                    "item": "Ahriman",
+                    "ap": "",
+                    "desc": "Death on random unit"
+                },
+                {
+                    "type": "Action",
+                    "name": "Drain Touch",
+                    "item": "Zombie",
+                    "ap": "",
+                    "desc": "Attack and drain HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "L? Shadow Flare",
+                    "item": "Vampire",
+                    "ap": "",
+                    "desc": "Damage if 2nd level digit is the same"
+                },
+                {
+                    "type": "Action",
+                    "name": "White Wind",
+                    "item": "Sprite",
+                    "ap": "",
+                    "desc": "Heal HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Angel Whisper",
+                    "item": "Titania",
+                    "ap": "",
+                    "desc": "Heal HP and Auto-Life"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Damage > MP",
+                    "item": "Judo Uniform",
+                    "ap": "300",
+                    "desc": "MP damage instead of HP damage"
+                },
+                {
+                    "type": "Support",
+                    "name": "Immunity",
+                    "item": "Survival Vest",
+                    "ap": "300",
+                    "desc": "Immune to Status ailments"
+                },
+                {
+                    "type": "Support",
+                    "name": "Learning",
+                    "item": "Blue Saber",
+                    "ap": "400",
+                    "desc": "Learn monsters' abilities"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Blue Combo",
+                    "item": "Mythril Saber",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Archer": [
+                {
+                    "type": "Action",
+                    "name": "Boost",
+                    "item": "Longbow",
+                    "ap": "100",
+                    "desc": "Raise strength of next attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim:Legs",
+                    "item": "Thorn Bow",
+                    "ap": "200",
+                    "desc": "Immobilise enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim:Arm",
+                    "item": "Nail Bow",
+                    "ap": "200",
+                    "desc": "Disable enemy's actions"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cupid",
+                    "item": "Artemis Bow",
+                    "ap": "200",
+                    "desc": "Inflict Charm status on enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Burial",
+                    "item": "Silver Bow",
+                    "ap": "300",
+                    "desc": "Remove Undead from battle"
+                },
+                {
+                    "type": "Action",
+                    "name": "Take Aim",
+                    "item": "Yoichi Bow",
+                    "ap": "100",
+                    "desc": "Never miss attack,halved damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Faster",
+                    "item": "Perseus Bow",
+                    "ap": "100",
+                    "desc": "Attack and nullify R-abilities"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blackout",
+                    "item": "Char Bow",
+                    "ap": "200",
+                    "desc": "Inflict darkness status ailment on enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Block Arrows",
+                    "item": "Green Beret",
+                    "ap": "300",
+                    "desc": "Block all arrow attacks"
+                },
+                {
+                    "type": "Support",
+                    "name": "Concentrate",
+                    "item": "Target Bow",
+                    "ap": "300",
+                    "desc": "Raises accuracy of most actions"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Bow Combo",
+                    "item": "Mythril Bow",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Hunter": [
+                {
+                    "type": "Action",
+                    "name": "Sonic Boom",
+                    "item": "Cranequin",
+                    "ap": "200",
+                    "desc": "Area Damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Oust",
+                    "item": "Windslash Bow",
+                    "ap": "200",
+                    "desc": "Remove weakened monster from battle"
+                },
+                {
+                    "type": "Action",
+                    "name": "Advice",
+                    "item": "Twin Bow",
+                    "ap": "100",
+                    "desc": "Raise critical ratio"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim:Vitals",
+                    "item": "Fey Bow",
+                    "ap": "300",
+                    "desc": "Inflict random status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Hunting",
+                    "item": "Hunt Bow",
+                    "ap": "300",
+                    "desc": "Receive more JP from a KO"
+                },
+                {
+                    "type": "Action",
+                    "name": "Addle",
+                    "item": "Master Bow",
+                    "ap": "200",
+                    "desc": "Inflict Addle status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ultima Shot",
+                    "item": "Seventh Heaven",
+                    "ap": "999",
+                    "desc": "Heavy damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Sidewinder",
+                    "item": "Hades Bow",
+                    "ap": "300",
+                    "desc": "Heavy damage to monsters"
+                },
+                {
+                    "type": "Action",
+                    "name": "Capture",
+                    "item": "Ranger Bow",
+                    "ap": "200",
+                    "desc": "Capture weakened monster"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Auto-Regen",
+                    "item": "Gaia Gear",
+                    "ap": "300",
+                    "desc": "Regen status effect when attacked"
+                },
+                {
+                    "type": "Support",
+                    "name": "Weapon Atk+",
+                    "item": "Nike Bow",
+                    "ap": "300",
+                    "desc": "Raises weapon attack"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Hunt Combo",
+                    "item": "Mythril Shot",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Warrior": [
+                {
+                    "type": "Action",
+                    "name": "First Aid",
+                    "item": "Shortsword",
+                    "ap": "100",
+                    "desc": "Cure HP and status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Powerbreak",
+                    "item": "Samson Sword",
+                    "ap": "200",
+                    "desc": "Lower target's weapon attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mindbreak",
+                    "item": "Buster Sword",
+                    "ap": "200",
+                    "desc": "Lower target's magic"
+                },
+                {
+                    "type": "Action",
+                    "name": "Magicbreak",
+                    "item": "Falchion",
+                    "ap": "200",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Speedbreak",
+                    "item": "Silver Sword",
+                    "ap": "200",
+                    "desc": "Lower target's speed"
+                },
+                {
+                    "type": "Action",
+                    "name": "Body Slam",
+                    "item": "Striborg",
+                    "ap": "300",
+                    "desc": "Heavy damage,but recoils"
+                },
+                {
+                    "type": "Action",
+                    "name": "Greased Bolt",
+                    "item": "Gale Sword",
+                    "ap": "200",
+                    "desc": "Attack and nullify R-abilities"
+                },
+                {
+                    "type": "Action",
+                    "name": "Downsize",
+                    "item": "Restorer",
+                    "ap": "300",
+                    "desc": "Halve target's HP"
+                },
+                {
+                    "type": "Support",
+                    "name": "Monkey Grip",
+                    "item": "Claymore",
+                    "ap": "300",
+                    "desc": "Hold two-handed weapon with one hand"
+                },
+                {
+                    "type": "Support",
+                    "name": "Shieldbearer",
+                    "item": "Bronze Shield",
+                    "ap": "300",
+                    "desc": "Equip a shield no matter what job"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Combat Combo",
+                    "item": "Mythril Sword",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Dragoon": [
+                {
+                    "type": "Action",
+                    "name": "Jump",
+                    "item": "Javelin",
+                    "ap": "100",
+                    "desc": ""
+                },
+                {
+                    "type": "Action",
+                    "name": "Lancet",
+                    "item": "Restorer",
+                    "ap": "300",
+                    "desc": "Attack and drain HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wyrmtamer",
+                    "item": "Buster Sword",
+                    "ap": "200",
+                    "desc": "Remove weakened Dragon from battle"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fire Breath",
+                    "item": "Lava Spear",
+                    "ap": "300",
+                    "desc": "Fire damage in a T-area"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bolt Breath",
+                    "item": "Gae Bolg",
+                    "ap": "300",
+                    "desc": "Lightning damage in a T-area"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ice Breath",
+                    "item": "Ice Lance",
+                    "ap": "300",
+                    "desc": "Ice damage in a T-area"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wyrmkiller",
+                    "item": "Blood Sword",
+                    "ap": "300",
+                    "desc": "Heavy damage to Dragons"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bangaa Cry",
+                    "item": "Dragon Whisker",
+                    "ap": "200",
+                    "desc": "Damage in a T-area"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Dragonheart",
+                    "item": "Vitanova",
+                    "ap": "300",
+                    "desc": "Reraise status effect when damaged"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Dragon Combo",
+                    "item": "Mythril Spear",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Defender": [
+                {
+                    "type": "Action",
+                    "name": "Tremor",
+                    "item": "El Cid Sword",
+                    "ap": "100",
+                    "desc": "Damage and knock back surrounding units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Meltdown",
+                    "item": "Vajra",
+                    "ap": "200",
+                    "desc": "Use HP to do damage to surrounding units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Defense",
+                    "item": "Lionheart",
+                    "ap": "200",
+                    "desc": "Raise Defense and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Drop Weapon",
+                    "item": "Ragnarok",
+                    "ap": "200",
+                    "desc": "Make target drop weapon"
+                },
+                {
+                    "type": "Action",
+                    "name": "Hibernate",
+                    "item": "Defender",
+                    "ap": "100",
+                    "desc": "Hibernate and remove all status ailments"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mow Down",
+                    "item": "Striborg",
+                    "ap": "200",
+                    "desc": "Area damage but lowers speed"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aura",
+                    "item": "Lohengrin",
+                    "ap": "300",
+                    "desc": "Casts Reraise and Regen"
+                },
+                {
+                    "type": "Action",
+                    "name": "Expert Guard",
+                    "item": "SaveTheQueen",
+                    "ap": "300",
+                    "desc": "Prevent all damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Last Berserk",
+                    "item": "Predator",
+                    "ap": "300",
+                    "desc": "Berserk status when critical"
+                },
+                {
+                    "type": "Support",
+                    "name": "Weapon Def+",
+                    "item": "Diamond Armor",
+                    "ap": "300",
+                    "desc": "Raises weapon defence"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Defend Combo",
+                    "item": "Mythril Brand",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Gladiator": [
+                {
+                    "type": "Action",
+                    "name": "Rush",
+                    "item": "Sweep Blade",
+                    "ap": "100",
+                    "desc": "Damage and push back target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Wild Swing",
+                    "item": "Ogun Blade",
+                    "ap": "200",
+                    "desc": "Attack all surrounding targets"
+                },
+                {
+                    "type": "Action",
+                    "name": "Beatdown",
+                    "item": "Shadow Blade",
+                    "ap": "200",
+                    "desc": "Double damage,halved accuracy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blitz",
+                    "item": "Sun Blade",
+                    "ap": "200",
+                    "desc": "Double accuracy,halved damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fire Sword",
+                    "item": "Flametongue",
+                    "ap": "200",
+                    "desc": "Fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bolt Sword",
+                    "item": "Air Blade",
+                    "ap": "200",
+                    "desc": "Lightning damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ice Sword",
+                    "item": "Ice Brand",
+                    "ap": "200",
+                    "desc": "Ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ultima Sword",
+                    "item": "Materia Blade",
+                    "ap": "999",
+                    "desc": "Heavy damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Strikeback",
+                    "item": "Wygar",
+                    "ap": "300",
+                    "desc": "Block attack and counter"
+                },
+                {
+                    "type": "Support",
+                    "name": "Doublehand",
+                    "item": "Venus Blade",
+                    "ap": "300",
+                    "desc": "Hold sword with two hands"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Sword Combo",
+                    "item": "Mythril Blade",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "White Monk": [
+                {
+                    "type": "Action",
+                    "name": "Whirlwind",
+                    "item": "Hard Knuckles",
+                    "ap": "100",
+                    "desc": "Attack all surrounding units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Air Render",
+                    "item": "Kaiser Knuckles",
+                    "ap": "200",
+                    "desc": "Wide ranged attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Earth Render",
+                    "item": "Tiger Fangs",
+                    "ap": "200",
+                    "desc": "Attack all units in a straight line"
+                },
+                {
+                    "type": "Action",
+                    "name": "Far Fist",
+                    "item": "Godhand",
+                    "ap": "200",
+                    "desc": "Wide ranged area damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Chakra",
+                    "item": "Cat Claws",
+                    "ap": "200",
+                    "desc": "Restore HP and remove status ailments"
+                },
+                {
+                    "type": "Action",
+                    "name": "Revive",
+                    "item": "Survivor",
+                    "ap": "300",
+                    "desc": "Revive KO'd unit"
+                },
+                {
+                    "type": "Action",
+                    "name": "Exorcise",
+                    "item": "Rising Sun",
+                    "ap": "300",
+                    "desc": "Remove Undead from battle"
+                },
+                {
+                    "type": "Action",
+                    "name": "Holy Sign",
+                    "item": "White Fangs",
+                    "ap": "200",
+                    "desc": "Dispel magic effects"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Reflex",
+                    "item": "Mirage Vest",
+                    "ap": "300",
+                    "desc": "Avoid damage from attack"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Counter",
+                    "item": "Brigandine",
+                    "ap": "300",
+                    "desc": "Counter an enemy's attack"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Monk Combo",
+                    "item": "Mythril Claws",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Bishop": [
+                {
+                    "type": "Action",
+                    "name": "Cura",
+                    "item": "Cure Staff",
+                    "ap": "200",
+                    "desc": "Recover some HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Dispel",
+                    "item": "Bless Staff",
+                    "ap": "200",
+                    "desc": "Dispel magic effects"
+                },
+                {
+                    "type": "Action",
+                    "name": "Holy",
+                    "item": "Nirvana Staff",
+                    "ap": "300",
+                    "desc": "Holy damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Barrier",
+                    "item": "Garnet Staff",
+                    "ap": "300",
+                    "desc": "Raise Defense and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Judge",
+                    "item": "Cheer Staff",
+                    "ap": "300",
+                    "desc": "Steal JP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Water",
+                    "item": "Spring Staff",
+                    "ap": "200",
+                    "desc": "Water element damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aero",
+                    "item": "Judge Staff",
+                    "ap": "200",
+                    "desc": "Air element damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Break",
+                    "item": "Snake Staff",
+                    "ap": "200",
+                    "desc": "Petrifies enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Return Magic",
+                    "item": "Black Robe",
+                    "ap": "300",
+                    "desc": "Counter Magic with Magic"
+                },
+                {
+                    "type": "Support",
+                    "name": "Half MP",
+                    "item": "Light Robe",
+                    "ap": "300",
+                    "desc": "Half MP usage when casting Magic"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Pray Combo",
+                    "item": "Mythril Staff",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Templar": [
+                {
+                    "type": "Action",
+                    "name": "Astra",
+                    "item": "SaveTheQueen",
+                    "ap": "200",
+                    "desc": "Prevent next status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Warcry",
+                    "item": "Javelin",
+                    "ap": "300",
+                    "desc": "Reduce surrounding units' speed"
+                },
+                {
+                    "type": "Action",
+                    "name": "Rasp",
+                    "item": "Apocalypse",
+                    "ap": "100",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cheer",
+                    "item": "Partisan",
+                    "ap": "100",
+                    "desc": "Raise weapon attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Silence",
+                    "item": "Ragnarok",
+                    "ap": "200",
+                    "desc": "Inflict Silence status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Soul Sphere",
+                    "item": "Arch Sword",
+                    "ap": "300",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Haste",
+                    "item": "Lohengrin",
+                    "ap": "200",
+                    "desc": "Causes Haste status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Lifebreak",
+                    "item": "Kain's Lance",
+                    "ap": "300",
+                    "desc": "Damage equal to lost HP"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Bonecrusher",
+                    "item": "Carabini Mail",
+                    "ap": "300",
+                    "desc": "Counter with 1.5 times damage"
+                },
+                {
+                    "type": "Support",
+                    "name": "Weapon Atk+",
+                    "item": "Trident",
+                    "ap": "300",
+                    "desc": "Raises weapon attack"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Sacred Combo",
+                    "item": "Mythril Brand",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Time Mage": [
+                {
+                    "type": "Action",
+                    "name": "Haste",
+                    "item": "Firewheel Rod",
+                    "ap": "200",
+                    "desc": "Causes Haste status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Quicken",
+                    "item": "Thor Rod",
+                    "ap": "300",
+                    "desc": "Makes unit take turn immediately"
+                },
+                {
+                    "type": "Action",
+                    "name": "Slow",
+                    "item": "Terre Rod",
+                    "ap": "200",
+                    "desc": "Causes Slow status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Reflect",
+                    "item": "Thunder Rod",
+                    "ap": "300",
+                    "desc": "Reflect Magic back at unit"
+                },
+                {
+                    "type": "Action",
+                    "name": "Stop",
+                    "item": "Chill Rod",
+                    "ap": "300",
+                    "desc": "Stops enemy in time"
+                },
+                {
+                    "type": "Action",
+                    "name": "Silence",
+                    "item": "Sleet Rod",
+                    "ap": "200",
+                    "desc": "Inflict Silence status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Quarter",
+                    "item": "Force Rod",
+                    "ap": "200",
+                    "desc": "Reduce target's HP by 1/4"
+                },
+                {
+                    "type": "Action",
+                    "name": "Demi",
+                    "item": "Stardust Rod",
+                    "ap": "300",
+                    "desc": "Reduce target's HP by 1/2"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Last Quicken",
+                    "item": "Lordly Robe",
+                    "ap": "300",
+                    "desc": "Casts Quicken when critical"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Time Combo",
+                    "item": "Mythril Rod",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Alchemist": [
+                {
+                    "type": "Action",
+                    "name": "Astra",
+                    "item": "Sage Crosier",
+                    "ap": "200",
+                    "desc": "Prevent next status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Death",
+                    "item": "Life Crosier",
+                    "ap": "300",
+                    "desc": "KO target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Meteor",
+                    "item": "Scorpion Tail",
+                    "ap": "300",
+                    "desc": "Powerful area damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Rasp",
+                    "item": "Energy Mace",
+                    "ap": "100",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Flare",
+                    "item": "Lotus Mace",
+                    "ap": "300",
+                    "desc": "Powerful damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Poison",
+                    "item": "Druid Mace",
+                    "ap": "100",
+                    "desc": "Poison target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Toad",
+                    "item": "Mandragora",
+                    "ap": "200",
+                    "desc": "Turn target into a frog"
+                },
+                {
+                    "type": "Support",
+                    "name": "Magic Pow+",
+                    "item": "Morning Star",
+                    "ap": "300",
+                    "desc": "Raises Magic"
+                },
+                {
+                    "type": "Support",
+                    "name": "Maintenance",
+                    "item": "Adaman Vest",
+                    "ap": "300",
+                    "desc": "Prevent items from being stolen/broken"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Gold Combo",
+                    "item": "Mythril Mace",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Beastmaster": [
+                {
+                    "type": "Action",
+                    "name": "Goblin",
+                    "item": "Demon Bell,War Trumpet",
+                    "ap": "200",
+                    "desc": "Control Goblins"
+                },
+                {
+                    "type": "Action",
+                    "name": "Flan",
+                    "item": "Demon Bell,Glass Bell",
+                    "ap": "200",
+                    "desc": "Control Flan"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bomb",
+                    "item": "Demon Bell,Aona Flute",
+                    "ap": "200",
+                    "desc": "Control Bombs"
+                },
+                {
+                    "type": "Action",
+                    "name": "Dragon",
+                    "item": "Earth Bell",
+                    "ap": "200",
+                    "desc": "Control Dragons"
+                },
+                {
+                    "type": "Action",
+                    "name": "Lamia",
+                    "item": "Glass Bell",
+                    "ap": "200",
+                    "desc": "Control Lamia"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bug",
+                    "item": "Fairy Harp",
+                    "ap": "200",
+                    "desc": "Control Bugs"
+                },
+                {
+                    "type": "Action",
+                    "name": "Tonberry",
+                    "item": "Blood Strings",
+                    "ap": "200",
+                    "desc": "Control Tonberrys"
+                },
+                {
+                    "type": "Action",
+                    "name": "Panther",
+                    "item": "War Trumpet",
+                    "ap": "200",
+                    "desc": "Control Panthers"
+                },
+                {
+                    "type": "Action",
+                    "name": "Malboro",
+                    "item": "Aona Flute",
+                    "ap": "200",
+                    "desc": "Control Malboro"
+                },
+                {
+                    "type": "Action",
+                    "name": "Floateye",
+                    "item": "Black Quena",
+                    "ap": "200",
+                    "desc": "Control Floateyes"
+                },
+                {
+                    "type": "Action",
+                    "name": "Undead",
+                    "item": "Black Quena",
+                    "ap": "200",
+                    "desc": "Control the Undead"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fairy",
+                    "item": "Fairy Harp",
+                    "ap": "200",
+                    "desc": "Control Fairys"
+                },
+                {
+                    "type": "Action",
+                    "name": "Rockbeast",
+                    "item": "Conch Shell",
+                    "ap": "200",
+                    "desc": "Control Rockbeasts"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Last Haste",
+                    "item": "Ninja Gear",
+                    "ap": "300",
+                    "desc": "Haste status when critical"
+                },
+                {
+                    "type": "Support",
+                    "name": "Immunity",
+                    "item": "Survival Vest",
+                    "ap": "300",
+                    "desc": "Immune to status ailments"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Beast Combo",
+                    "item": "Mythril Bell",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Morpher": [
+                {
+                    "type": "Action",
+                    "name": "Goblin",
+                    "item": "Goblin Soul",
+                    "ap": "200",
+                    "desc": "Morph into Goblin"
+                },
+                {
+                    "type": "Action",
+                    "name": "Flan",
+                    "item": "Flan Soul",
+                    "ap": "200",
+                    "desc": "Morph into Flan"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bomb",
+                    "item": "Bomb Soul",
+                    "ap": "200",
+                    "desc": "Morph into Bomb"
+                },
+                {
+                    "type": "Action",
+                    "name": "Dragon",
+                    "item": "Dragon Soul",
+                    "ap": "200",
+                    "desc": "Morph into Dragon"
+                },
+                {
+                    "type": "Action",
+                    "name": "Lamia",
+                    "item": "Lamia Soul",
+                    "ap": "200",
+                    "desc": "Morph into Lamia"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bug",
+                    "item": "Bug Soul",
+                    "ap": "200",
+                    "desc": "Morph into Bug"
+                },
+                {
+                    "type": "Action",
+                    "name": "Panther",
+                    "item": "Panther Soul",
+                    "ap": "200",
+                    "desc": "Morph into Panther"
+                },
+                {
+                    "type": "Action",
+                    "name": "Malboro",
+                    "item": "Malboro Soul",
+                    "ap": "200",
+                    "desc": "Morph into Malboro"
+                },
+                {
+                    "type": "Action",
+                    "name": "Floateye",
+                    "item": "Eye Soul",
+                    "ap": "200",
+                    "desc": "Morph into Floateye"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Damage > MP",
+                    "item": "Judo Uniform",
+                    "ap": "300",
+                    "desc": "MP damage instead of HP damage"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Morph Combo",
+                    "item": "Mythril Soul",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Sage": [
+                {
+                    "type": "Action",
+                    "name": "Drain",
+                    "item": "Energy Mace",
+                    "ap": "100",
+                    "desc": "Attack and drain HP from target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blind",
+                    "item": "Druid Mace",
+                    "ap": "100",
+                    "desc": "Cause Darkness status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Water",
+                    "item": "Battle Mace",
+                    "ap": "200",
+                    "desc": "Water elemental damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aero",
+                    "item": "Battle Mace",
+                    "ap": "200",
+                    "desc": "Wind elemental damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Raise",
+                    "item": "Life Crosier",
+                    "ap": "300",
+                    "desc": "Heal HP and revive KO'd unit"
+                },
+                {
+                    "type": "Action",
+                    "name": "Giga Flare",
+                    "item": "Lotus Mace",
+                    "ap": "300",
+                    "desc": "Powerful area damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Bio",
+                    "item": "Madragora",
+                    "ap": "300",
+                    "desc": "Inflicts Poison"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ultima Blow",
+                    "item": "Zeus Mace",
+                    "ap": "999",
+                    "desc": "Heavy damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Reflex",
+                    "item": "Mirage Vest",
+                    "ap": "300",
+                    "desc": "Avoid damage from attack"
+                },
+                {
+                    "type": "Support",
+                    "name": "Weapon Def+",
+                    "item": "Dark Gear",
+                    "ap": "300",
+                    "desc": "Raises Weapon Defence"
+                },
+                {
+                    "type": "Support",
+                    "name": "Shieldbearer",
+                    "item": "Round Shield",
+                    "ap": "300",
+                    "desc": "Equip shield no matter what job"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Wise Combo",
+                    "item": "Mythril Mace",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Fencer": [
+                {
+                    "type": "Action",
+                    "name": "Swarmstrike",
+                    "item": "Stinger",
+                    "ap": "100",
+                    "desc": "Half damage and Poison"
+                },
+                {
+                    "type": "Action",
+                    "name": "Shadowstick",
+                    "item": "Silver Rapier",
+                    "ap": "200",
+                    "desc": "Reduce target's speed"
+                },
+                {
+                    "type": "Action",
+                    "name": "Checkmate",
+                    "item": "Gupti Aga",
+                    "ap": "300",
+                    "desc": "Cast Doom on enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Featherblow",
+                    "item": "Estoc",
+                    "ap": "200",
+                    "desc": "Double accuracy,half damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Swallowtail",
+                    "item": "Djinn Flyssa",
+                    "ap": "300",
+                    "desc": "Attack surrounding units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Manastrike",
+                    "item": "Mage Masher",
+                    "ap": "300",
+                    "desc": "MP damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Piercethrough",
+                    "item": "Flamberge",
+                    "ap": "200",
+                    "desc": "Attack two adjacent units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Nighthawk",
+                    "item": "Joyeuse",
+                    "ap": "200",
+                    "desc": "Wide ranged attack"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Reflex",
+                    "item": "Mirage Vest",
+                    "ap": "300",
+                    "desc": "Avoid damage from attack"
+                },
+                {
+                    "type": "Support",
+                    "name": "Shieldbearer",
+                    "item": "Bronze Shield",
+                    "ap": "300",
+                    "desc": "Equip shield no matter what job"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Lunge Combo",
+                    "item": "Mythril Rapier",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Elementalist": [
+                {
+                    "type": "Action",
+                    "name": "Fire Whip",
+                    "item": "Scarlette",
+                    "ap": "100",
+                    "desc": "Fire damage and Disable"
+                },
+                {
+                    "type": "Action",
+                    "name": "Earth Heal",
+                    "item": "Fleuret",
+                    "ap": "200",
+                    "desc": "Heals HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "White Flame",
+                    "item": "Flamberge",
+                    "ap": "100",
+                    "desc": "Heals HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Shining Air",
+                    "item": "Djinn Flyssa",
+                    "ap": "200",
+                    "desc": "Wind damage and Blind"
+                },
+                {
+                    "type": "Action",
+                    "name": "Evil Gaze",
+                    "item": "Joyeuse",
+                    "ap": "300",
+                    "desc": "Dark damage and Confusion"
+                },
+                {
+                    "type": "Action",
+                    "name": "Heavy Dust",
+                    "item": "Estoc",
+                    "ap": "200",
+                    "desc": "Earth damage and Immobilize"
+                },
+                {
+                    "type": "Action",
+                    "name": "Sliprain",
+                    "item": "Silver Rapier",
+                    "ap": "200",
+                    "desc": "Water damage and Slow"
+                },
+                {
+                    "type": "Action",
+                    "name": "Elementalshift",
+                    "item": "Epeprism",
+                    "ap": "300",
+                    "desc": "Shift target's elemental resistance"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Absorb MP",
+                    "item": "Lordly Robe",
+                    "ap": "300",
+                    "desc": "Absorb MP used by enemy's attack"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Spirit Combo",
+                    "item": "Mythril Rapier",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Red Mage": [
+                {
+                    "type": "Action",
+                    "name": "Barrier",
+                    "item": "Mage Masher",
+                    "ap": "300",
+                    "desc": "Raise Defense and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Fire",
+                    "item": "Scarlette",
+                    "ap": "100",
+                    "desc": "Weak fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Thunder",
+                    "item": "Stinger",
+                    "ap": "100",
+                    "desc": "Weak thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blizzard",
+                    "item": "Flamberge",
+                    "ap": "100",
+                    "desc": "Weak ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cure",
+                    "item": "Fleuret",
+                    "ap": "100",
+                    "desc": "Recover a little HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Sleep",
+                    "item": "Estoc",
+                    "ap": "200",
+                    "desc": "Inflicts Sleep status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Poison",
+                    "item": "Silver Rapier",
+                    "ap": "100",
+                    "desc": "Inflicts Poison"
+                },
+                {
+                    "type": "Action",
+                    "name": "Doublecast",
+                    "item": "Madu",
+                    "ap": "999",
+                    "desc": "Cast two spells in one turn"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Catch",
+                    "item": "Chain Plate",
+                    "ap": "300",
+                    "desc": "Catch item thrown by enemy"
+                },
+                {
+                    "type": "Support",
+                    "name": "Magic Pow+",
+                    "item": "Colichemarde",
+                    "ap": "300",
+                    "desc": "Raise Magic"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Red Combo",
+                    "item": "Mythril Rapier",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Summoner": [
+                {
+                    "type": "Action",
+                    "name": "Unicorn",
+                    "item": "Pure Staff",
+                    "ap": "200",
+                    "desc": "Heal HP and status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ifrit",
+                    "item": "Guard Staff",
+                    "ap": "200",
+                    "desc": "Fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ramuh",
+                    "item": "Judge Staff",
+                    "ap": "200",
+                    "desc": "Thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Shiva",
+                    "item": "Snake Staff",
+                    "ap": "200",
+                    "desc": "Ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Kirin",
+                    "item": "Cure Staff",
+                    "ap": "200",
+                    "desc": "Casts Regen on units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Carbuncle",
+                    "item": "Garnet Staff",
+                    "ap": "300",
+                    "desc": "Casts Reflect on units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Phoenix",
+                    "item": "Nirvana Staff",
+                    "ap": "300",
+                    "desc": "Revive KO'd units"
+                },
+                {
+                    "type": "Action",
+                    "name": "Madeen",
+                    "item": "Cheer Staff",
+                    "ap": "300",
+                    "desc": "Holy damage"
+                },
+                {
+                    "type": "Support",
+                    "name": "Half MP",
+                    "item": "Light Robe",
+                    "ap": "300",
+                    "desc": "Half MP usage when casting magic"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Summon Combo",
+                    "item": "Mythrill Staff",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Assassin": [
+                {
+                    "type": "Action",
+                    "name": "Shadowbind",
+                    "item": "Fey Bow",
+                    "ap": "200",
+                    "desc": "Cast stop on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Last Breath",
+                    "item": "Petalchaser",
+                    "ap": "300",
+                    "desc": "Instantly KO target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aphonia",
+                    "item": "Murasame",
+                    "ap": "200",
+                    "desc": "Inflict Silence status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Nightmare",
+                    "item": "Kikuichimonji",
+                    "ap": "300",
+                    "desc": "Cast Sleep and Doom on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ague",
+                    "item": "Ranger Bow",
+                    "ap": "200",
+                    "desc": "Cast Slow on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Rockseal",
+                    "item": "Kotetsu",
+                    "ap": "300",
+                    "desc": "Cast Petrify on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Oblivion",
+                    "item": "Masamune",
+                    "ap": "200",
+                    "desc": "Inflict Addle status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ultima Masher",
+                    "item": "Zanmato",
+                    "ap": "999",
+                    "desc": "Heavy damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Return Fire",
+                    "item": "Power Sash",
+                    "ap": "300",
+                    "desc": "Return arrow attacks"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Killer Combo",
+                    "item": "Mythril Epee",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Sniper": [
+                {
+                    "type": "Action",
+                    "name": "Doubleshot",
+                    "item": "Twin Bow",
+                    "ap": "300",
+                    "desc": "Attack twice consecutively"
+                },
+                {
+                    "type": "Action",
+                    "name": "Beso Toxico",
+                    "item": "Cranequin",
+                    "ap": "200",
+                    "desc": "Attack and Poison"
+                },
+                {
+                    "type": "Action",
+                    "name": "Death Sickle",
+                    "item": "Hades Bow",
+                    "ap": "300",
+                    "desc": "Cast doom on enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Conceal",
+                    "item": "Windslash Bow",
+                    "ap": "100",
+                    "desc": "Become invisible to enemys,except Panthers"
+                },
+                {
+                    "type": "Action",
+                    "name": "Doom Archer",
+                    "item": "Max's Oathbow",
+                    "ap": "300",
+                    "desc": "HP and MP damage equal to damage taken"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim: Armor",
+                    "item": "Fey Bow",
+                    "ap": "300",
+                    "desc": "Destroy target's armour"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim: Weapon",
+                    "item": "Master Bow",
+                    "ap": "300",
+                    "desc": "Destory target's weapon"
+                },
+                {
+                    "type": "Action",
+                    "name": "Aim: Wallet",
+                    "item": "Hunt Bow",
+                    "ap": "200",
+                    "desc": "Steal gil from enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Auto-Regen",
+                    "item": "Gaia Gear",
+                    "ap": "300",
+                    "desc": "Regen status effect when attacked"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Sniper Combo",
+                    "item": "Mythril Shot",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Animist": [
+                {
+                    "type": "Action",
+                    "name": "Sheep Count",
+                    "item": "Glass Bell",
+                    "ap": "100",
+                    "desc": "Put enemies to sleep"
+                },
+                {
+                    "type": "Action",
+                    "name": "100% Wool",
+                    "item": "Earth Bell",
+                    "ap": "200",
+                    "desc": "Raises Defence and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Cuisine",
+                    "item": "Heal Chime",
+                    "ap": "300",
+                    "desc": "Fully restores HP"
+                },
+                {
+                    "type": "Action",
+                    "name": "Tail Wag",
+                    "item": "Fairy Harp",
+                    "ap": "200",
+                    "desc": "Inflict Charm status on enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Chocobo Rush",
+                    "item": "Satyr Flute",
+                    "ap": "300",
+                    "desc": "Straight line damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Frogsong",
+                    "item": "Aona Flute",
+                    "ap": "200",
+                    "desc": "Turn enemy into a frog"
+                },
+                {
+                    "type": "Action",
+                    "name": "Friend",
+                    "item": "Blood Strings",
+                    "ap": "300",
+                    "desc": "Summon random spirit"
+                },
+                {
+                    "type": "Action",
+                    "name": "Catnip",
+                    "item": "War Trumpet",
+                    "ap": "100",
+                    "desc": "Inflict Berserk status"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Block Arrows",
+                    "item": "Green Beret",
+                    "ap": "300",
+                    "desc": "Block all arrow attack"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Animal Combo",
+                    "item": "Mythril Bell",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Mog Knight": [
+                {
+                    "type": "Action",
+                    "name": "Mog Attack",
+                    "item": "Flametongue",
+                    "ap": "100",
+                    "desc": "Damage and push back target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Guard",
+                    "item": "Kwigon Blade",
+                    "ap": "200",
+                    "desc": "Raise Defence and Resistance"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Lance",
+                    "item": "Atmos Blade",
+                    "ap": "200",
+                    "desc": "Wide ranged attack"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Rush",
+                    "item": "Shadow Blade",
+                    "ap": "200",
+                    "desc": "Double damage,halved accuracy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Shield",
+                    "item": "Pearl Blade",
+                    "ap": "300",
+                    "desc": "Prevent next status ailment"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Peek",
+                    "item": "Paraiba Blade",
+                    "ap": "300",
+                    "desc": "Find hidden equipment on enemy"
+                },
+                {
+                    "type": "Action",
+                    "name": "Mog Aid",
+                    "item": "Icebrand",
+                    "ap": "300",
+                    "desc": "Cure HP and status"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ultima Charge",
+                    "item": "Materia Blade",
+                    "ap": "999",
+                    "desc": "Heavy damage"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Last Haste",
+                    "item": "Gold Armor",
+                    "ap": "300",
+                    "desc": "Haste status when critical"
+                },
+                {
+                    "type": "Support",
+                    "name": "Shieldbearer",
+                    "item": "Round Shield",
+                    "ap": "300",
+                    "desc": "Equip a shield no matter what job"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Charge Combo",
+                    "item": "Mythril Blade",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Gunner": [
+                {
+                    "type": "Action",
+                    "name": "Fireshot",
+                    "item": "Aiot Gun",
+                    "ap": "100",
+                    "desc": "Fire damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Boltshot",
+                    "item": "Riot Gun",
+                    "ap": "100",
+                    "desc": "Thunder damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Iceshot",
+                    "item": "Giot Gun",
+                    "ap": "100",
+                    "desc": "Ice damage"
+                },
+                {
+                    "type": "Action",
+                    "name": "Confushot",
+                    "item": "Chaos Rifle",
+                    "ap": "200",
+                    "desc": "Attack and Confuse"
+                },
+                {
+                    "type": "Action",
+                    "name": "Charmshot",
+                    "item": "Peacemaker",
+                    "ap": "300",
+                    "desc": "Attack and Charm"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blindshot",
+                    "item": "Silver Cannon",
+                    "ap": "100",
+                    "desc": "Attack and Darkness"
+                },
+                {
+                    "type": "Action",
+                    "name": "Silenshot",
+                    "item": "Lost Gun",
+                    "ap": "200",
+                    "desc": "Attack and Silence"
+                },
+                {
+                    "type": "Action",
+                    "name": "Stopshot",
+                    "item": "Outsider",
+                    "ap": "300",
+                    "desc": "Attack and Stop"
+                },
+                {
+                    "type": "Support",
+                    "name": "Concentrate",
+                    "item": "Longbarrel",
+                    "ap": "300",
+                    "desc": "Raises accuracy of most actions"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Gun Combo",
+                    "item": "Mythril Gun",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Juggler": [
+                {
+                    "type": "Action",
+                    "name": "Hurl",
+                    "item": "Kris Knife",
+                    "ap": "100",
+                    "desc": "Throw an unequipped weapon"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ring",
+                    "item": "Rondell Dagger",
+                    "ap": "200",
+                    "desc": "Cast Stop on target"
+                },
+                {
+                    "type": "Action",
+                    "name": "Firebomb",
+                    "item": "Khukuri",
+                    "ap": "300",
+                    "desc": "Damage and Berserk"
+                },
+                {
+                    "type": "Action",
+                    "name": "Ball",
+                    "item": "Scramasax",
+                    "ap": "200",
+                    "desc": "Inflict Confuse"
+                },
+                {
+                    "type": "Action",
+                    "name": "Dagger",
+                    "item": "Jambiya",
+                    "ap": "300",
+                    "desc": "Damage and Disable"
+                },
+                {
+                    "type": "Action",
+                    "name": "Smile",
+                    "item": "Orichalcum",
+                    "ap": "300",
+                    "desc": "Makes unit take turn immdeiately(Quicken)"
+                },
+                {
+                    "type": "Action",
+                    "name": "Gil Toss",
+                    "item": "Jack Knife",
+                    "ap": "100",
+                    "desc": "Throw Gil at enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Catch",
+                    "item": "Chain Plate",
+                    "ap": "300",
+                    "desc": "Catch item thrown by enemy"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Return Fire",
+                    "item": "Power Sash",
+                    "ap": "300",
+                    "desc": "Return arrow attacks"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Juggle Combo",
+                    "item": "Mythril Knife",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ],
+            "Gadgeteer": [
+                {
+                    "type": "Action",
+                    "name": "Red Spring",
+                    "item": "Rising Sun",
+                    "ap": "200",
+                    "desc": "Haste status on all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Blue Screw",
+                    "item": "White Fangs",
+                    "ap": "200",
+                    "desc": "Dispel on all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Green Gear",
+                    "item": "Sick Knuckles",
+                    "ap": "200",
+                    "desc": "Poison all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Silver Disc",
+                    "item": "Hard Knuckles",
+                    "ap": "200",
+                    "desc": "Darkness on all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Gold Battery",
+                    "item": "Cat Claws",
+                    "ap": "200",
+                    "desc": "Recover HP for all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Black Ingot",
+                    "item": "Death Claws",
+                    "ap": "200",
+                    "desc": "Doom on all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Chroma Gem",
+                    "item": "Dream Claws",
+                    "ap": "200",
+                    "desc": "Sleep on all"
+                },
+                {
+                    "type": "Action",
+                    "name": "Yellow Spring",
+                    "item": "Survivor",
+                    "ap": "200",
+                    "desc": "Casts Protect and Shell on all"
+                },
+                {
+                    "type": "Reaction",
+                    "name": "Auto-Regen",
+                    "item": "Gaia Gear",
+                    "ap": "300",
+                    "desc": "Regen status effect when attacked"
+                },
+                {
+                    "type": "Support",
+                    "name": "Damage > MP",
+                    "item": "Judo Uniform",
+                    "ap": "300",
+                    "desc": "MP damage instead of HP damage"
+                },
+                {
+                    "type": "Combo",
+                    "name": "Gadget Combo",
+                    "item": "Mythril Claws",
+                    "ap": "100",
+                    "desc": "Use JP to attack with clan members"
+                }
+            ]
+        };
+
+        const statKeys = ['HP', 'MP', 'ATK', 'DEF', 'MAG', 'RES', 'SPD'];
+        const statNames = {HP: 'HP', MP: 'MP', ATK: 'ATK', DEF: 'DEF', MAG: 'MAG', RES: 'RES', SPD: 'SPD'};
+
+        const statGainBounds = {
+            HP: {min: 5.0, max: 9.8},
+            MP: {min: 1.0, max: 8.8},
+            ATK: {min: 5.0, max: 9.8},
+            DEF: {min: 6.0, max: 10.0},
+            MAG: {min: 5.0, max: 10.2},
+            RES: {min: 6.0, max: 10.2},
+            SPD: {min: 0.8, max: 2.3}
+        };
+
+        let activeSkillFilter = 'All';
+        let currentJobSkills = [];
+
+        let radarChartInstance = null;
+        let progChartInstance = null;
+        let compareChartInstance = null;
+
+        window.onload = function () {
+            populateRaces();
+            onRaceChange();
+            populateSimRaces();
+            onSimRaceChange();
+            populateCmpRaces();
+        };
+
+        function toggleCard(bodyId, btn) {
+            const bodyEl = document.getElementById(bodyId);
+            const textSpan = btn.querySelector('.btn-text');
+            if (bodyEl.classList.contains('hidden')) {
+                bodyEl.classList.remove('hidden');
+                textSpan.textContent = 'Hide';
+            } else {
+                bodyEl.classList.add('hidden');
+                textSpan.textContent = 'Show';
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-lookup').classList.add('hidden');
+            document.getElementById('view-sim').classList.add('hidden');
+            document.getElementById('view-compare').classList.add('hidden');
+
+            document.getElementById('tab-lookup-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+            document.getElementById('tab-sim-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+            document.getElementById('tab-compare-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+
+            if (tab === 'lookup') {
+                document.getElementById('view-lookup').classList.remove('hidden');
+                document.getElementById('tab-lookup-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow hover:bg-amber-400 transition";
+            } else if (tab === 'sim') {
+                document.getElementById('view-sim').classList.remove('hidden');
+                document.getElementById('tab-sim-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow hover:bg-amber-400 transition";
+                runSimulation();
+            } else if (tab === 'compare') {
+                document.getElementById('view-compare').classList.remove('hidden');
+                document.getElementById('tab-compare-btn').className = "px-4 py-2 text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow hover:bg-amber-400 transition";
+                renderComparison();
+            }
+        }
+
+        function populateRaces() {
+            const raceSelect = document.getElementById('race-select');
+            raceSelect.innerHTML = '';
+            Object.keys(fftaData).forEach(race => {
+                const opt = document.createElement('option');
+                opt.value = race;
+                opt.textContent = race;
+                raceSelect.appendChild(opt);
+            });
+        }
+
+        function onRaceChange() {
+            const race = document.getElementById('race-select').value;
+            const jobSelect = document.getElementById('job-select');
+            jobSelect.innerHTML = '';
+            Object.keys(fftaData[race]).forEach(job => {
+                const opt = document.createElement('option');
+                opt.value = job;
+                opt.textContent = job;
+                jobSelect.appendChild(opt);
+            });
+            onJobChange();
+        }
+
+        function onJobChange() {
+            const race = document.getElementById('race-select').value;
+            const job = document.getElementById('job-select').value;
+            const jobData = fftaData[race][job];
+
+            document.getElementById('job-title').textContent = `${race} - ${job}`;
+            document.getElementById('job-race-badge').textContent = race;
+
+            const tbody = document.getElementById('stat-table-body');
+            tbody.innerHTML = '';
+
+            const relativeScores = [];
+
+            statKeys.forEach(key => {
+                const [base, growth, chanceVal] = jobData[key];
+                const chancePct = chanceVal * 10;
+                const avgGain = growth + (chanceVal / 10.0);
+
+                if (key === 'SPD') {
+                    document.getElementById('spd-highlight').textContent = `${avgGain.toFixed(1)} SPD / Lv`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-semibold ${key === 'SPD' ? 'text-cyan-400 font-bold' : 'text-amber-300/90'}">${statNames[key]}</td>
+                    <td class="py-2.5 px-2 text-center">${base}</td>
+                    <td class="py-2.5 px-2 text-center">${growth}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <span class="inline-block px-1.5 py-0.5 text-[11px] font-bold rounded ${chancePct >= 70 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-300'}">
+                            ${chancePct}%
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-2 text-center font-bold ${key === 'SPD' ? 'text-cyan-400' : 'text-slate-200'}">${avgGain.toFixed(1)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                const b = statGainBounds[key];
+                let normPct = ((avgGain - b.min) / (b.max - b.min)) * 100;
+                if (normPct < 5) normPct = 5;
+                if (normPct > 100) normPct = 100;
+                relativeScores.push(normPct.toFixed(1));
+            });
+
+            renderRadarChart(relativeScores);
+
+            currentJobSkills = fftaSkills[job] || [];
+            renderSkillList();
+        }
+
+        function filterSkills(type) {
+            activeSkillFilter = type;
+            renderSkillList();
+        }
+
+        function renderSkillList() {
+            const container = document.getElementById('skills-container');
+            container.innerHTML = '';
+
+            const filtered = activeSkillFilter === 'All'
+                ? currentJobSkills
+                : currentJobSkills.filter(s => s.type === activeSkillFilter);
+
+            document.getElementById('skill-count-badge').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">No ${activeSkillFilter} skills found.</div>`;
+                return;
+            }
+
+            filtered.forEach(s => {
+                let badgeStyle = "bg-blue-500/20 text-blue-400 border-blue-500/30";
+                if (s.type === 'Reaction') badgeStyle = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+                if (s.type === 'Support') badgeStyle = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/80 hover:border-slate-600 transition text-xs space-y-1";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="font-bold text-amber-300 text-sm">${s.name}</div>
+                        <span class="text-[10px] border px-2 py-0.5 rounded-full font-bold ${badgeStyle}">${s.type}</span>
+                    </div>
+                    <div class="text-slate-300 text-[11px]">${s.desc}</div>
+                    <div class="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-700/50">
+                        <span>🗡 Item: <strong class="text-slate-200">${s.item}</strong></span>
+                        <span>⚡ AP: <strong class="text-amber-400">${s.ap}</strong></span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderRadarChart(scores) {
+            const ctx = document.getElementById('job-radar-chart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: statKeys.map(k => statNames[k]),
+                    datasets: [{
+                        label: 'Relative Growth Score (%)',
+                        data: scores,
+                        backgroundColor: 'rgba(245, 158, 11, 0.3)',
+                        borderColor: '#f59e0b',
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            angleLines: {color: '#334155'},
+                            grid: {color: '#334155'},
+                            pointLabels: {color: '#cbd5e1', font: {size: 11, weight: 'bold'}},
+                            ticks: {display: false}
+                        }
+                    },
+                    plugins: {
+                        legend: {display: false},
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return ` ${context.label}: ${context.raw}% of max growth`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateSimRaces() {
+            const raceSelect = document.getElementById('sim-race');
+            raceSelect.innerHTML = '';
+            Object.keys(fftaData).forEach(race => {
+                const opt = document.createElement('option');
+                opt.value = race;
+                opt.textContent = race;
+                raceSelect.appendChild(opt);
+            });
+        }
+
+        function onSimRaceChange() {
+            const race = document.getElementById('sim-race').value || Object.keys(fftaData)[0];
+            const simJobSelect = document.getElementById('sim-job');
+            simJobSelect.innerHTML = '';
+            Object.keys(fftaData[race]).forEach(job => {
+                const opt = document.createElement('option');
+                opt.value = job;
+                opt.textContent = job;
+                simJobSelect.appendChild(opt);
+            });
+        }
+
+        function runSimulation() {
+            const race = document.getElementById('sim-race').value;
+            const job = document.getElementById('sim-job').value;
+            let targetLv = parseInt(document.getElementById('sim-level').value) || 50;
+            if (targetLv < 1) targetLv = 1;
+            if (targetLv > 50) targetLv = 50;
+
+            document.getElementById('res-target-lv').textContent = targetLv;
+
+            const jobData = fftaData[race][job];
+            const levelsToGain = targetLv - 1;
+            const numSimulations = 1000;
+
+            const simResults = {};
+            statKeys.forEach(k => {
+                simResults[k] = {min: Infinity, max: -Infinity, totalSum: 0};
+            });
+
+            const progressionAvg = {};
+            statKeys.forEach(k => progressionAvg[k] = new Array(targetLv).fill(0));
+
+            for (let sim = 0; sim < numSimulations; sim++) {
+                const currentStats = {};
+                statKeys.forEach(k => {
+                    currentStats[k] = jobData[k][0];
+                    progressionAvg[k][0] += currentStats[k];
+                });
+
+                for (let lv = 1; lv <= levelsToGain; lv++) {
+                    statKeys.forEach(k => {
+                        const [base, growth, chanceVal] = jobData[k];
+                        const bonusChance = chanceVal / 10.0;
+                        const gotBonus = Math.random() < bonusChance ? 1 : 0;
+
+                        currentStats[k] += growth + gotBonus;
+                        progressionAvg[k][lv] += currentStats[k];
+                    });
+                }
+
+                statKeys.forEach(k => {
+                    const finalVal = currentStats[k];
+                    if (finalVal < simResults[k].min) simResults[k].min = finalVal;
+                    if (finalVal > simResults[k].max) simResults[k].max = finalVal;
+                    simResults[k].totalSum += finalVal;
+                });
+            }
+
+            const resultsGrid = document.getElementById('sim-results-grid');
+            resultsGrid.innerHTML = '';
+
+            statKeys.forEach(k => {
+                const avgVal = (simResults[k].totalSum / numSimulations).toFixed(1);
+                const minVal = Math.floor(simResults[k].min);
+                const maxVal = Math.floor(simResults[k].max);
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/60 p-3 rounded-lg border border-slate-700/80 flex justify-between items-center";
+                card.innerHTML = `
+                    <div>
+                        <div class="text-xs font-semibold ${k === 'SPD' ? 'text-cyan-400 font-bold' : 'text-slate-400'}">${statNames[k]}</div>
+                        <div class="text-lg font-bold ${k === 'SPD' ? 'text-cyan-400' : 'text-amber-400'}">${avgVal} <span class="text-xs text-slate-400 font-normal">avg</span></div>
+                    </div>
+                    <div class="text-right text-xs text-slate-400">
+                        <div>Min: <span class="text-slate-200 font-semibold">${minVal}</span></div>
+                        <div>Max: <span class="text-slate-200 font-semibold">${maxVal}</span></div>
+                    </div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+
+            statKeys.forEach(k => {
+                for (let lv = 0; lv < targetLv; lv++) {
+                    progressionAvg[k][lv] = (progressionAvg[k][lv] / numSimulations).toFixed(1);
+                }
+            });
+
+            renderProgressionChart(targetLv, progressionAvg);
+        }
+
+        function renderProgressionChart(targetLv, progData) {
+            const ctx = document.getElementById('sim-progression-chart').getContext('2d');
+            if (progChartInstance) progChartInstance.destroy();
+
+            const labels = Array.from({length: targetLv}, (_, i) => `Lv ${i + 1}`);
+
+            const datasets = [
+                {label: 'HP', data: progData['HP'], borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.2},
+                {label: 'MP', data: progData['MP'], borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.2},
+                {label: 'ATK', data: progData['ATK'], borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.2},
+                {label: 'DEF', data: progData['DEF'], borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.2},
+                {label: 'MAG', data: progData['MAG'], borderColor: '#a855f7', backgroundColor: '#a855f7', tension: 0.2},
+                {label: 'RES', data: progData['RES'], borderColor: '#ec4899', backgroundColor: '#ec4899', tension: 0.2},
+                {label: 'SPD', data: progData['SPD'], borderColor: '#06b6d4', backgroundColor: '#06b6d4', borderWidth: 3, tension: 0.2}
+            ];
+
+            progChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {labels, datasets},
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {grid: {color: '#1e293b'}, ticks: {color: '#94a3b8'}},
+                        y: {grid: {color: '#1e293b'}, ticks: {color: '#94a3b8'}}
+                    },
+                    plugins: {
+                        legend: {labels: {color: '#cbd5e1'}}
+                    }
+                }
+            });
+        }
+
+        function populateCmpRaces() {
+            [1, 2].forEach(num => {
+                const select = document.getElementById(`cmp-race-${num}`);
+                select.innerHTML = '';
+                Object.keys(fftaData).forEach(race => {
+                    const opt = document.createElement('option');
+                    opt.value = race;
+                    opt.textContent = race;
+                    select.appendChild(opt);
+                });
+                onCmpRaceChange(num);
+            });
+        }
+
+        function onCmpRaceChange(num) {
+            const race = document.getElementById(`cmp-race-${num}`).value;
+            const jobSelect = document.getElementById(`cmp-job-${num}`);
+            jobSelect.innerHTML = '';
+            Object.keys(fftaData[race]).forEach(job => {
+                const opt = document.createElement('option');
+                opt.value = job;
+                opt.textContent = job;
+                jobSelect.appendChild(opt);
+            });
+            renderComparison();
+        }
+
+        function renderComparison() {
+            const race1 = document.getElementById('cmp-race-1').value;
+            const job1 = document.getElementById('cmp-job-1').value;
+            const race2 = document.getElementById('cmp-race-2').value;
+            const job2 = document.getElementById('cmp-job-2').value;
+
+            if (!race1 || !job1 || !race2 || !job2) return;
+
+            const data1 = fftaData[race1][job1];
+            const data2 = fftaData[race2][job2];
+
+            const growths1 = statKeys.map(k => (data1[k][1] + data1[k][2] / 10.0).toFixed(1));
+            const growths2 = statKeys.map(k => (data2[k][1] + data2[k][2] / 10.0).toFixed(1));
+
+            const ctx = document.getElementById('compare-bar-chart').getContext('2d');
+            if (compareChartInstance) compareChartInstance.destroy();
+
+            compareChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: statKeys.map(k => statNames[k]),
+                    datasets: [
+                        {
+                            label: `${race1} ${job1} Avg Growth`,
+                            data: growths1,
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderColor: '#f59e0b',
+                            borderWidth: 1
+                        },
+                        {
+                            label: `${race2} ${job2} Avg Growth`,
+                            data: growths2,
+                            backgroundColor: 'rgba(6, 182, 212, 0.7)',
+                            borderColor: '#06b6d4',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {grid: {color: '#1e293b'}, ticks: {color: '#94a3b8'}},
+                        y: {grid: {color: '#1e293b'}, ticks: {color: '#94a3b8'}}
+                    },
+                    plugins: {
+                        legend: {labels: {color: '#cbd5e1'}}
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
