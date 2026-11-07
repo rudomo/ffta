@@ -1,30 +1,600 @@
-<img src="https://faqsmedia.ign.com/faqs/image/astroboy_fftadv_edit.gif?width=1280&height=720&fit=bounds&dpr=2" width="100%"><br>
-<pre style="font-size:30px;">
-S e n g o k u  F u k k a t s u  (AstroBlue)
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sengoku Fukkatsu - Map Lookup</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+    <script>
+        // Image loading error handler defined early so inline onerror can access it immediately
+        function handleImageError(img) {
+            img.onerror = null; // Prevent infinite loop
+            const num = (typeof selectedRowIndex !== 'undefined' && typeof datasets !== 'undefined' && datasets[activeTitle]?.place[selectedRowIndex]) 
+                ? datasets[activeTitle].place[selectedRowIndex].image 
+                : '?';
+            img.src = `https://placehold.co/800x400/111827/9CA3AF?text=map/${num}.jpg+Not+Found`;
+        }
+    </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
 
-Sprohm   - 14
-Lutia    -  8
-Nubs     -  9
-Eluut    -  6
-Ulei     -  5
-Cadoan   - 15
-Aisen    - 18
-Roda     -  4
-Koring   - 10
-Salika   - 22
-Nargai   - 13 (Red Boots)
-Baguba   - 16
-Dorsa    -  7 (Materite)
-Kudik    - 24
-Jeraw    -  2 (Excalibur)
-Muscadet - 21
-Uladon   -  1 (Scarab)
-Gotor    - 12
-Ahli     -  3 (Genji Armlets)
-Delia    - 17 (Princess Guard)
-Ozmon    - 23 (Gastra Bow)
-Materi   - 20 (Red Boots)
-Tubola   - 19 (Genji Helm & Genji Shield)
-Helj     - 26
-Deti     - 11 (Materia Blade)
-Siena    - 25 (Estreledge)
+    <!-- App Container -->
+    <div class="max-w-4xl mx-auto w-full flex-grow flex flex-col p-4 sm:p-6 space-y-4">
+        
+        <!-- Header Section: Dataset Selector + Gear Icon -->
+        <header class="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4 shadow-lg">
+            <div class="flex items-center space-x-3 w-full max-w-xs sm:max-w-sm">
+                <i data-lucide="map" class="w-6 h-6 text-brand-500 flex-shrink-0"></i>
+                <select id="datasetSelect" onchange="switchDataset(this.value)" class="bg-gray-800 text-gray-100 border border-gray-700 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium cursor-pointer transition">
+                    <!-- Dynamic options populate here -->
+                </select>
+            </div>
+            
+            <button onclick="toggleModal('settingsModal', true)" title="Settings & Data Management" class="p-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <!-- Top Image Section (100% Width) -->
+        <section class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl flex flex-col items-center relative group min-h-[160px] sm:min-h-[260px] justify-center">
+            <!-- Image Display -->
+            <img id="mapImage" 
+                 src="map/14.jpg" 
+                 alt="Selected Map Image" 
+                 onerror="handleImageError(this)" 
+                 class="w-full h-auto max-h-[450px] object-contain transition-opacity duration-300 block bg-gray-950" />
+            
+            <!-- Map Overlay Info Badge -->
+            <div class="absolute bottom-3 left-3 bg-gray-950/80 backdrop-blur-md border border-gray-800 text-xs text-gray-300 px-3 py-1.5 rounded-lg flex items-center space-x-2 shadow-md hidden">
+                <i data-lucide="image" class="w-4 h-4 text-brand-500"></i>
+                <span>File Path: <strong id="imagePathText" class="text-white font-mono">map/14.jpg</strong></span>
+            </div>
+        </section>
+
+        <!-- Title Section -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2">
+            <div>
+                <h1 id="datasetTitle" class="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <!-- Title dynamically placed -->
+                </h1>
+            </div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input type="text" 
+                   id="filterInput" 
+                   oninput="renderTable()" 
+                   placeholder="Filter places by name, number, or item name..." 
+                   class="w-full bg-gray-900 border border-gray-800 text-gray-100 placeholder-gray-500 text-sm rounded-xl pl-10 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner">
+            <button id="clearFilterBtn" onclick="clearFilter()" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </section>
+
+        <!-- Table Section -->
+        <section class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl flex-grow">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-800/60 border-b border-gray-800 text-gray-400 font-semibold uppercase text-xs tracking-wider">
+                            <th class="py-3 px-4 sm:px-6 w-2/3">Name</th>
+                            <th class="py-3 px-4 sm:px-6 w-1/3">Number</th>
+                        </tr>
+                    </thead>
+                    <tbody id="placesTableBody" class="divide-y divide-gray-800/60 font-medium">
+                        <!-- Table rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Empty state -->
+            <div id="emptyState" class="hidden p-8 text-center text-gray-500">
+                <i data-lucide="ghost" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                <p>No locations match your filter query.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-gray-600 border-t border-gray-900 mt-6">
+        Sengoku Fukkatsu Interactive Map & Data Manager
+    </footer>
+
+    <!-- Settings / Data Management Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="modalContent">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-gray-800">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-5 h-5 text-brand-500"></i>
+                    Data Management
+                </h3>
+                <button onclick="toggleModal('settingsModal', false)" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="py-4 space-y-5">
+                
+                <!-- Import Dataset -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider">Import JSON Dataset</label>
+                    <div class="flex items-center space-x-2">
+                        <label class="flex-grow flex items-center justify-center px-4 py-2.5 border border-dashed border-gray-700 hover:border-brand-500 rounded-xl cursor-pointer bg-gray-950/50 hover:bg-gray-800/50 transition group">
+                            <i data-lucide="upload-cloud" class="w-5 h-5 text-gray-400 group-hover:text-brand-500 mr-2 transition"></i>
+                            <span class="text-xs text-gray-300 font-medium">Choose JSON file...</span>
+                            <input type="file" id="importJsonInput" accept=".json" onchange="importJSON(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Export Dataset -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider">Export Current Dataset</label>
+                    <button onclick="exportJSON()" class="w-full flex items-center justify-center px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-100 rounded-xl font-medium text-xs transition space-x-2 border border-gray-700 shadow-sm">
+                        <i data-lucide="download" class="w-4 h-4 text-brand-500"></i>
+                        <span>Download JSON File</span>
+                    </button>
+                </div>
+
+                <!-- Restore Default -->
+                <div class="pt-3 border-t border-gray-800 space-y-2">
+                    <label class="block text-xs font-semibold text-red-400 uppercase tracking-wider">Reset Storage</label>
+                    <button onclick="resetToDefaultData()" class="w-full flex items-center justify-center px-4 py-2.5 bg-red-950/30 hover:bg-red-900/40 text-red-300 border border-red-900/50 rounded-xl font-medium text-xs transition space-x-2">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        <span>Restore Default Dataset</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-gray-800 flex justify-end">
+                <button onclick="toggleModal('settingsModal', false)" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 border border-gray-700 text-gray-100 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <i id="toastIcon" data-lucide="check-circle" class="w-5 h-5 text-brand-500"></i>
+        <span id="toastMsg" class="text-xs font-medium">Notification message</span>
+    </div>
+
+    <script>
+        // Default Dataset embedded inside application
+        const DEFAULT_DATASET = {
+            "title": "Sengoku Fukkatsu",
+            "place": [
+                { "name": "Sprohm", "image": 14, "item": null },
+                { "name": "Lutia", "image": 8, "item": null },
+                { "name": "Nubs", "image": 9, "item": null },
+                { "name": "Eluut", "image": 6, "item": null },
+                { "name": "Ulei", "image": 5, "item": null },
+                { "name": "Cadoan", "image": 15, "item": null },
+                { "name": "Aisen", "image": 18, "item": null },
+                { "name": "Roda", "image": 4, "item": null },
+                { "name": "Koring", "image": 10, "item": null },
+                { "name": "Salika", "image": 22, "item": null },
+                { "name": "Nargai", "image": 13, "item": "RedBoots" },
+                { "name": "Baguba", "image": 16, "item": null },
+                { "name": "Dorsa", "image": 7, "item": "Materite" },
+                { "name": "Kudik", "image": 24, "item": null },
+                { "name": "Jeraw", "image": 2, "item": "Excalibur" },
+                { "name": "Muscadet", "image": 21, "item": null },
+                { "name": "Uladon", "image": 1, "item": "Scarab" },
+                { "name": "Gotor", "image": 12, "item": null },
+                { "name": "Ahli", "image": 3, "item": "Genji Armlets" },
+                { "name": "Delia", "image": 17, "item": "Princess Guard" },
+                { "name": "Ozmon", "image": 23, "item": "Gastra Bow" },
+                { "name": "Materi", "image": 20, "item": "Red Boots" },
+                { "name": "Tubola", "image": 19, "item": "GenjiHelm & GenjiShield" },
+                { "name": "Helj", "image": 26, "item": null },
+                { "name": "Deti", "image": 11, "item": "Materia Blade" },
+                { "name": "Siena", "image": 25, "item": "Estreledge" }
+            ]
+        };
+
+        const STORAGE_KEY = 'map_lookup_datasets_v1';
+        const ACTIVE_KEY = 'map_lookup_active_dataset_v1';
+
+        // State variables
+        let datasets = {};
+        let activeTitle = '';
+        let selectedRowIndex = null;
+
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initStorage();
+            renderDatasetSelect();
+            loadActiveDataset();
+            lucide.createIcons();
+        });
+
+        // Initialize local browser storage
+        function initStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    datasets = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Failed to parse storage, loading default", e);
+                    datasets = {};
+                }
+            }
+            
+            // If empty, set default dataset
+            if (!datasets || Object.keys(datasets).length === 0) {
+                datasets = { [DEFAULT_DATASET.title]: DEFAULT_DATASET };
+                saveDatasetsToStorage();
+            }
+
+            const active = localStorage.getItem(ACTIVE_KEY);
+            if (active && datasets[active]) {
+                activeTitle = active;
+            } else {
+                activeTitle = Object.keys(datasets)[0];
+                localStorage.setItem(ACTIVE_KEY, activeTitle);
+            }
+        }
+
+        // Save current datasets state to localStorage
+        function saveDatasetsToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(datasets));
+        }
+
+        // Populate dropdown menu with dataset titles
+        function renderDatasetSelect() {
+            const select = document.getElementById('datasetSelect');
+            select.innerHTML = '';
+            
+            Object.keys(datasets).forEach(title => {
+                const opt = document.createElement('option');
+                opt.value = title;
+                opt.textContent = title;
+                if (title === activeTitle) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        // Switch dataset when user selects from dropdown
+        function switchDataset(title) {
+            if (datasets[title]) {
+                activeTitle = title;
+                localStorage.setItem(ACTIVE_KEY, activeTitle);
+                selectedRowIndex = null;
+                loadActiveDataset();
+                showToast(`Switched to dataset: ${title}`);
+            }
+        }
+
+        // Load active dataset to UI
+        function loadActiveDataset() {
+            const currentData = datasets[activeTitle];
+            if (!currentData) return;
+
+            // Set Title
+            document.getElementById('datasetTitle').innerText = currentData.title || activeTitle;
+
+            // Render Table
+            renderTable();
+
+            // Auto select first entry if available
+            if (currentData.place && currentData.place.length > 0) {
+                selectPlace(0);
+            } else {
+                setImage(null);
+            }
+        }
+
+        // Render table based on dataset and filter
+        function renderTable() {
+            const currentData = datasets[activeTitle];
+            const tbody = document.getElementById('placesTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const filterValue = document.getElementById('filterInput').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clearFilterBtn');
+
+            // Show/hide clear button
+            clearBtn.classList.toggle('hidden', filterValue === '');
+
+            tbody.innerHTML = '';
+
+            if (!currentData || !currentData.place) return;
+
+            let visibleCount = 0;
+
+            currentData.place.forEach((item, index) => {
+                const nameStr = (item.name || '').toString().toLowerCase();
+                const numStr = (item.image !== null && item.image !== undefined) ? item.image.toString().toLowerCase() : '';
+                const itemStr = (item.item || '').toString().toLowerCase();
+
+                // Apply Search Filter
+                if (filterValue && !nameStr.includes(filterValue) && !numStr.includes(filterValue) && !itemStr.includes(filterValue)) {
+                    return;
+                }
+
+                visibleCount++;
+                const isSelected = index === selectedRowIndex;
+
+                const tr = document.createElement('tr');
+                tr.className = `transition duration-150 border-b border-gray-800/60 ${
+                    isSelected ? 'bg-brand-900/30 border-l-4 border-l-brand-500' : 'hover:bg-gray-800/40'
+                }`;
+
+                // Container cell spanning both columns
+                const tdFull = document.createElement('td');
+                tdFull.colSpan = 2;
+                tdFull.className = 'p-3 sm:p-4 space-y-2';
+
+                // Top row: [Name] [Number] - Entire container clickable
+                const topRow = document.createElement('div');
+                topRow.className = 'flex items-center justify-between gap-4 cursor-pointer select-none rounded-lg p-1 -m-1 hover:bg-gray-800/60 transition';
+                topRow.onclick = () => selectPlace(index);
+
+                // Name
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'font-semibold text-gray-100 flex items-center space-x-2 text-base flex-grow';
+                nameDiv.innerHTML = `
+                    <i data-lucide="map-pin" class="w-4 h-4 ${isSelected ? 'text-brand-500' : 'text-gray-500'}"></i>
+                    <span>${escapeHtml(item.name || '')}</span>
+                `;
+
+                // Number (Text Input - click propagation stopped to allow direct text editing)
+                const inputNum = document.createElement('input');
+                inputNum.type = 'text';
+                inputNum.value = item.image !== null && item.image !== undefined ? item.image : '';
+                inputNum.placeholder = 'Number';
+                inputNum.className = 'w-24 bg-gray-950/60 border border-gray-800 focus:border-brand-500 focus:bg-gray-900 text-gray-200 text-sm rounded-lg px-2.5 py-1 focus:outline-none transition font-mono text-center';
+                inputNum.onclick = (e) => e.stopPropagation();
+                inputNum.onchange = (e) => updateRowData(index, 'image', e.target.value);
+
+                topRow.appendChild(nameDiv);
+                topRow.appendChild(inputNum);
+
+                tdFull.appendChild(topRow);
+
+                // Bottom row: [Item Textarea (2 lines)] - Shown only when selected
+                if (isSelected) {
+                    const textareaItem = document.createElement('textarea');
+                    textareaItem.rows = 2;
+                    textareaItem.value = item.item || '';
+                    textareaItem.placeholder = 'Enter item details...';
+                    textareaItem.className = 'w-full bg-gray-950/60 border border-gray-800 focus:border-brand-500 focus:bg-gray-900 text-gray-200 text-sm rounded-lg p-2 focus:outline-none transition resize-none block mt-2';
+                    textareaItem.onclick = (e) => e.stopPropagation();
+                    textareaItem.onchange = (e) => updateRowData(index, 'item', e.target.value);
+                    tdFull.appendChild(textareaItem);
+                }
+
+                tr.appendChild(tdFull);
+                tbody.appendChild(tr);
+            });
+
+            emptyState.classList.toggle('hidden', visibleCount > 0);
+            lucide.createIcons();
+        }
+
+        // Handle selecting a row and updating map image
+        function selectPlace(index) {
+            selectedRowIndex = index;
+            const place = datasets[activeTitle].place[index];
+            if (place) {
+                setImage(place.image);
+            }
+            renderTable();
+        }
+
+        // Update image display on top
+        function setImage(imgNumber) {
+            const imgEl = document.getElementById('mapImage');
+            const pathText = document.getElementById('imagePathText');
+            
+            if (imgNumber !== null && imgNumber !== undefined && imgNumber !== '') {
+                const src = `map/${imgNumber}.jpg`;
+                imgEl.src = src;
+                pathText.innerText = src;
+            } else {
+                // Fallback placeholder when no number specified
+                imgEl.src = `https://placehold.co/800x400/111827/4B5563?text=No+Map+Image+Assigned`;
+                pathText.innerText = 'No image';
+            }
+        }
+
+        // Inline edit handler for data table
+        function updateRowData(index, key, value) {
+            if (!datasets[activeTitle] || !datasets[activeTitle].place[index]) return;
+            
+            let parsedVal = value;
+            if (key === 'image') {
+                parsedVal = value.trim() === '' ? null : value.trim();
+            } else if (key === 'item') {
+                parsedVal = value.trim() === '' ? null : value.trim();
+            }
+
+            datasets[activeTitle].place[index][key] = parsedVal;
+            saveDatasetsToStorage();
+
+            // If updating currently selected row's image number, update image live
+            if (index === selectedRowIndex && key === 'image') {
+                setImage(parsedVal);
+            }
+
+            showToast('Changes saved locally');
+        }
+
+        // Clear filter search box
+        function clearFilter() {
+            document.getElementById('filterInput').value = '';
+            renderTable();
+        }
+
+        // Export current dataset as JSON file
+        function exportJSON() {
+            const currentData = datasets[activeTitle];
+            if (!currentData) return;
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const filename = `${(currentData.title || 'dataset').toLowerCase().replace(/\s+/g, '_')}.json`;
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast(`Exported ${filename}`);
+        }
+
+        // Import new dataset from uploaded JSON file
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    
+                    // Validate basic expected structure
+                    if (!parsed || typeof parsed !== 'object' || !parsed.title || !Array.isArray(parsed.place)) {
+                        alert("Invalid JSON format! Must contain 'title' (string) and 'place' (array).");
+                        return;
+                    }
+
+                    // Save into datasets state
+                    datasets[parsed.title] = parsed;
+                    activeTitle = parsed.title;
+                    saveDatasetsToStorage();
+                    
+                    // Refresh UI
+                    renderDatasetSelect();
+                    loadActiveDataset();
+                    toggleModal('settingsModal', false);
+                    showToast(`Successfully imported dataset: "${parsed.title}"`);
+
+                } catch (err) {
+                    alert("Error parsing JSON file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset input
+        }
+
+        // Reset storage back to initial default data
+        function resetToDefaultData() {
+            if (confirm("Are you sure you want to reset all data back to default? Custom imports and edits will be restored.")) {
+                datasets = { [DEFAULT_DATASET.title]: JSON.parse(JSON.stringify(DEFAULT_DATASET)) };
+                activeTitle = DEFAULT_DATASET.title;
+                saveDatasetsToStorage();
+                
+                renderDatasetSelect();
+                loadActiveDataset();
+                toggleModal('settingsModal', false);
+                showToast("Data restored to default!");
+            }
+        }
+
+        // Toggle Modal View
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById('modalContent');
+            
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 200);
+            }
+        }
+
+        // Show Toast Notification
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            
+            toastMsg.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // HTML Escape utility
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
