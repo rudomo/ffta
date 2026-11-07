@@ -1,0 +1,135 @@
+{
+  "title": "Big Bounty",
+  "place": [
+    {
+      "name": "Sprohm",
+      "image": 22,
+      "item": null
+    },
+    {
+      "name": "Lutia",
+      "image": 10,
+      "item": null
+    },
+    {
+      "name": "Nubs",
+      "image": 12,
+      "item": null
+    },
+    {
+      "name": "Eluut",
+      "image": 1,
+      "item": null
+    },
+    {
+      "name": "Ulei",
+      "image": 2,
+      "item": null
+    },
+    {
+      "name": "Cadoan",
+      "image": 14,
+      "item": null
+    },
+    {
+      "name": "Aisen",
+      "image": 21,
+      "item": null
+    },
+    {
+      "name": "Roda",
+      "image": 16,
+      "item": null
+    },
+    {
+      "name": "Koring",
+      "image": 18,
+      "item": "Red Boots"
+    },
+    {
+      "name": "Salika",
+      "image": 17,
+      "item": null
+    },
+    {
+      "name": "Nargai",
+      "image": 19,
+      "item": "Red Boots"
+    },
+    {
+      "name": "Baguba",
+      "image": 20,
+      "item": null
+    },
+    {
+      "name": "Dorsa",
+      "image": 11,
+      "item": "Adamantite"
+    },
+    {
+      "name": "Kudik",
+      "image": 9,
+      "item": "Tiara"
+    },
+    {
+      "name": "Jeraw",
+      "image": 5,
+      "item": "Ruby Earring"
+    },
+    {
+      "name": "Muscadet",
+      "image": 15,
+      "item": null
+    },
+    {
+      "name": "Uladono",
+      "image": 4,
+      "item": "2x Scarab & Ruby Earring"
+    },
+    {
+      "name": "Gotor",
+      "image": 3,
+      "item": "Galmia Shoes"
+    },
+    {
+      "name": "Ahli",
+      "image": 8,
+      "item": "Zodiac Ore"
+    },
+    {
+      "name": "Delia",
+      "image": 7,
+      "item": "Mindu Gem"
+    },
+    {
+      "name": "Ozmon",
+      "image": 25,
+      "item": null
+    },
+    {
+      "name": "Materi",
+      "image": 23,
+      "item": "Red Boots"
+    },
+    {
+      "name": "Tubola",
+      "image": 13,
+      "item": "Genji Armor, Genji Shield & Materia Blade"
+    },
+    {
+      "name": "Helje",
+      "image": 6,
+      "item": "Genji Armlets and Vajra"
+    },
+    {
+      "name": "Deti",
+      "image": 24,
+      "item": "Tulwar"
+    },
+    {
+      "name": "Siena",
+      "image": 26,
+      "item": "Gastra Bow"
+    }
+  ]
+}

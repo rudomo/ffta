@@ -1,0 +1,135 @@
+{
+  "title": "Perfect Ivalice",
+  "place": [
+    {
+      "name": "Sprohm",
+      "image": 14,
+      "item": null
+    },
+    {
+      "name": "Lutia",
+      "image": 19,
+      "item": "Red Boots"
+    },
+    {
+      "name": "Nubs",
+      "image": 12,
+      "item": null
+    },
+    {
+      "name": "Eluut",
+      "image": 4,
+      "item": null
+    },
+    {
+      "name": "Ulei",
+      "image": 5,
+      "item": null
+    },
+    {
+      "name": "Cadoan",
+      "image": 24,
+      "item": "Rubber Suit"
+    },
+    {
+      "name": "Aisen",
+      "image": 18,
+      "item": null
+    },
+    {
+      "name": "Roda",
+      "image": 13,
+      "item": null
+    },
+    {
+      "name": "Koring",
+      "image": 17,
+      "item": "Materia Blade"
+    },
+    {
+      "name": "Salika",
+      "image": 16,
+      "item": null
+    },
+    {
+      "name": "Nargai",
+      "image": 22,
+      "item": "Telaq Flower"
+    },
+    {
+      "name": "Baguba",
+      "image": 25,
+      "item": "Ribbon"
+    },
+    {
+      "name": "Dorsa",
+      "image": 1,
+      "item": null
+    },
+    {
+      "name": "Kudik",
+      "image": 15,
+      "item": "Tiara"
+    },
+    {
+      "name": "Jeraw",
+      "image": 8,
+      "item": "Ruby Earring"
+    },
+    {
+      "name": "Muscadet",
+      "image": 21,
+      "item": null
+    },
+    {
+      "name": "Uladon",
+      "image": 3,
+      "item": null
+    },
+    {
+      "name": "Gotor",
+      "image": 2,
+      "item": "Galmia Shoes"
+    },
+    {
+      "name": "Ahli",
+      "image": 7,
+      "item": "Genji Armlets"
+    },
+    {
+      "name": "Delia",
+      "image": 6,
+      "item": "Mindu Gem"
+    },
+    {
+      "name": "Ozmon",
+      "image": 23,
+      "item": "Gastra Bow & Zeus Mace"
+    },
+    {
+      "name": "Materi",
+      "image": 9,
+      "item": null
+    },
+    {
+      "name": "Tubola",
+      "image": 20,
+      "item": null
+    },
+    {
+      "name": "Helj",
+      "image": 26,
+      "item": null
+    },
+    {
+      "name": "Deti",
+      "image": 11,
+      "item": null
+    },
+    {
+      "name": "Siena",
+      "image": 10,
+      "item": "Sage Robe"
+    }
+  ]
+}

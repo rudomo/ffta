@@ -1,0 +1,135 @@
+{
+  "title": "Sengoku Fukkatsu",
+  "place": [
+    {
+      "name": "Sprohm",
+      "image": 14,
+      "item": null
+    },
+    {
+      "name": "Lutia",
+      "image": 8,
+      "item": null
+    },
+    {
+      "name": "Nubs",
+      "image": 9,
+      "item": null
+    },
+    {
+      "name": "Eluut",
+      "image": 6,
+      "item": null
+    },
+    {
+      "name": "Ulei",
+      "image": 5,
+      "item": null
+    },
+    {
+      "name": "Cadoan",
+      "image": 15,
+      "item": null
+    },
+    {
+      "name": "Aisen",
+      "image": 18,
+      "item": null
+    },
+    {
+      "name": "Roda",
+      "image": 4,
+      "item": null
+    },
+    {
+      "name": "Koring",
+      "image": 10,
+      "item": null
+    },
+    {
+      "name": "Salika",
+      "image": 22,
+      "item": null
+    },
+    {
+      "name": "Nargai",
+      "image": 13,
+      "item": "RedBoots"
+    },
+    {
+      "name": "Baguba",
+      "image": 16,
+      "item": null
+    },
+    {
+      "name": "Dorsa",
+      "image": 7,
+      "item": "Materite"
+    },
+    {
+      "name": "Kudik",
+      "image": 24,
+      "item": null
+    },
+    {
+      "name": "Jeraw",
+      "image": 2,
+      "item": "Excalibur"
+    },
+    {
+      "name": "Muscadet",
+      "image": 21,
+      "item": null
+    },
+    {
+      "name": "Uladon",
+      "image": 1,
+      "item": "Scarab"
+    },
+    {
+      "name": "Gotor",
+      "image": 12,
+      "item": null
+    },
+    {
+      "name": "Ahli",
+      "image": 3,
+      "item": "Genji Armlets"
+    },
+    {
+      "name": "Delia",
+      "image": 17,
+      "item": "Princess Guard"
+    },
+    {
+      "name": "Ozmon",
+      "image": 23,
+      "item": "Gastra Bow"
+    },
+    {
+      "name": "Materi",
+      "image": 20,
+      "item": "Red Boots"
+    },
+    {
+      "name": "Tubola",
+      "image": 19,
+      "item": "GenjiHelm & GenjiShield"
+    },
+    {
+      "name": "Helj",
+      "image": 26,
+      "item": null
+    },
+    {
+      "name": "Deti",
+      "image": 11,
+      "item": "Materia Blade"
+    },
+    {
+      "name": "Siena",
+      "image": 25,
+      "item": "Estreledge"
+    }
+  ]
+}
