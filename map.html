@@ -64,33 +64,32 @@
 
     <!-- App Container -->
     <div class="max-w-4xl mx-auto w-full flex-grow flex flex-col p-4 sm:p-6 space-y-4">
-        
-        <!-- Header Section: Dataset Selector + Gear Icon -->
 
+        <!-- Title Section -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 id="datasetTitle" class="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+                        <!-- Title dynamically placed -->
+                    </h1>
+                    <button id="toggleExplanationBtn" onclick="toggleExplanation()" title="Toggle explanation" class="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800/80 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <i id="explanationIcon" data-lucide="chevron-up" class="w-5 h-5 text-gray-400"></i>
+                    </button>
+                </div>
+                <p id="datasetExplanation" class="text-sm text-gray-400 mt-1 leading-relaxed whitespace-pre-line">
+                    <!-- Explanation text dynamically placed -->
+                </p>
+            </div>
+        </section>
 
         <!-- Top Image Section (100% Width) -->
-        <section>
+        <section class="bg-gray-900 rounded-xl overflow-hidden shadow-xl flex flex-col items-center relative group justify-center">
             <!-- Image Display -->
             <img id="mapImage" 
                  src="map/14.jpg" 
                  alt="Selected Map Image" 
                  onerror="handleImageError(this)" 
-                 class="w-full h-auto max-h-[450px] object-contain transition-opacity duration-300 block bg-gray-950" />
-            
-            <!-- Map Overlay Info Badge -->
-            <div class="absolute bottom-3 left-3 bg-gray-950/80 backdrop-blur-md border border-gray-800 text-xs text-gray-300 px-3 py-1.5 rounded-lg flex items-center space-x-2 shadow-md hidden">
-                <i data-lucide="image" class="w-4 h-4 text-brand-500"></i>
-                <span>File Path: <strong id="imagePathText" class="text-white font-mono">map/14.jpg</strong></span>
-            </div>
-        </section>
-
-        <!-- Title Section -->
-        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2">
-            <div>
-                <h1 id="datasetTitle" class="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                    <!-- Title dynamically placed -->
-                </h1>
-            </div>
+                 class="w-full h-auto transition-opacity duration-300 block bg-gray-950" />
         </section>
 
         <!-- Filter Section -->
@@ -101,7 +100,7 @@
             <input type="text" 
                    id="filterInput" 
                    oninput="renderTable()" 
-                   placeholder="Filter..." 
+                   placeholder="Filter places by name, number, or item name..." 
                    class="w-full bg-gray-900 border border-gray-800 text-gray-100 placeholder-gray-500 text-sm rounded-xl pl-10 pr-10 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-inner">
             <button id="clearFilterBtn" onclick="clearFilter()" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-white">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -125,10 +124,12 @@
             </div>
             <!-- Empty state -->
             <div id="emptyState" class="hidden p-8 text-center text-gray-500">
-                <i data-lucide="ghost" class="w-4 h-4 mx-auto mb-2 opacity-50"></i>
-            
+                <i data-lucide="ghost" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                <p>No locations match your filter query.</p>
             </div>
         </section>
+
+        <!-- Header Section: Dataset Selector + Gear Icon (Moved above footer) -->
         <header class="flex items-center justify-between bg-gray-900 border border-gray-800 rounded-xl p-3 sm:p-4 shadow-lg">
             <div class="flex items-center space-x-3 w-full max-w-xs sm:max-w-sm">
                 <i data-lucide="map" class="w-6 h-6 text-brand-500 flex-shrink-0"></i>
@@ -141,11 +142,12 @@
                 <i data-lucide="settings" class="w-6 h-6"></i>
             </button>
         </header>
+
     </div>
 
     <!-- Footer -->
     <footer class="text-center py-4 text-xs text-gray-600 border-t border-gray-900 mt-6">
-       <a href="https://github.com/rudomo/ffta/tree/main/json" target="_blank"> FFTA Interactive Map </a>a 
+        Sengoku Fukkatsu Interactive Map & Data Manager
     </footer>
 
     <!-- Settings / Data Management Modal -->
@@ -217,6 +219,7 @@
         // Default Dataset embedded inside application
         const DEFAULT_DATASET = {
             "title": "Sengoku Fukkatsu",
+            "expanation": "- Maximum amout of Genji gear (Genji Shield, Genji Helm & Genji Armlets).\n- Get an Excalibur as early as possible, and a collection of very useful items (Princess Guard, Gastra Bow, Materia Blade & Estreledge).",
             "place": [
                 { "name": "Sprohm", "image": 14, "item": null },
                 { "name": "Lutia", "image": 8, "item": null },
@@ -249,11 +252,14 @@
 
         const STORAGE_KEY = 'map_lookup_datasets_v1';
         const ACTIVE_KEY = 'map_lookup_active_dataset_v1';
+        const EXPLANATION_VISIBLE_KEY = 'map_lookup_explanation_visible_v1';
+        const SELECTED_PLACE_KEY = 'map_lookup_selected_place_v1';
 
         // State variables
         let datasets = {};
         let activeTitle = '';
         let selectedRowIndex = null;
+        let isExplanationVisible = true;
 
         // Initialize application on load
         window.addEventListener('DOMContentLoaded', () => {
@@ -288,11 +294,46 @@
                 activeTitle = Object.keys(datasets)[0];
                 localStorage.setItem(ACTIVE_KEY, activeTitle);
             }
+
+            const expStored = localStorage.getItem(EXPLANATION_VISIBLE_KEY);
+            if (expStored !== null) {
+                isExplanationVisible = expStored === 'true';
+            }
         }
 
         // Save current datasets state to localStorage
         function saveDatasetsToStorage() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(datasets));
+        }
+
+        // Toggle explanation visibility
+        function toggleExplanation() {
+            isExplanationVisible = !isExplanationVisible;
+            localStorage.setItem(EXPLANATION_VISIBLE_KEY, isExplanationVisible.toString());
+            updateExplanationVisibility();
+        }
+
+        function updateExplanationVisibility() {
+            const explanationEl = document.getElementById('datasetExplanation');
+            const iconEl = document.getElementById('explanationIcon');
+            const btnEl = document.getElementById('toggleExplanationBtn');
+            const currentData = datasets[activeTitle];
+            const explanationText = currentData ? (currentData.expanation || currentData.explanation || '') : '';
+
+            if (!explanationText) {
+                btnEl.classList.add('hidden');
+                explanationEl.classList.add('hidden');
+            } else {
+                btnEl.classList.remove('hidden');
+                if (isExplanationVisible) {
+                    explanationEl.classList.remove('hidden');
+                    iconEl.setAttribute('data-lucide', 'chevron-up');
+                } else {
+                    explanationEl.classList.add('hidden');
+                    iconEl.setAttribute('data-lucide', 'chevron-down');
+                }
+            }
+            lucide.createIcons();
         }
 
         // Populate dropdown menu with dataset titles
@@ -315,6 +356,7 @@
                 activeTitle = title;
                 localStorage.setItem(ACTIVE_KEY, activeTitle);
                 selectedRowIndex = null;
+                localStorage.removeItem(`${SELECTED_PLACE_KEY}_${activeTitle}`);
                 loadActiveDataset();
                 showToast(`Switched to dataset: ${title}`);
             }
@@ -325,15 +367,30 @@
             const currentData = datasets[activeTitle];
             if (!currentData) return;
 
-            // Set Title
+            // Set Title & Explanation (supports both "expanation" as in json schema and "explanation")
             document.getElementById('datasetTitle').innerText = currentData.title || activeTitle;
+            const explanationEl = document.getElementById('datasetExplanation');
+            const explanationText = currentData.expanation || currentData.explanation || '';
+            explanationEl.innerText = explanationText;
+
+            updateExplanationVisibility();
+
+            // Restore saved row index for active dataset if exists
+            const savedIndex = localStorage.getItem(`${SELECTED_PLACE_KEY}_${activeTitle}`);
+            if (savedIndex !== null && currentData.place && currentData.place[parseInt(savedIndex, 10)]) {
+                selectedRowIndex = parseInt(savedIndex, 10);
+            } else if (currentData.place && currentData.place.length > 0) {
+                selectedRowIndex = 0;
+            } else {
+                selectedRowIndex = null;
+            }
 
             // Render Table
             renderTable();
 
-            // Auto select first entry if available
-            if (currentData.place && currentData.place.length > 0) {
-                selectPlace(0);
+            // Render Map Image
+            if (selectedRowIndex !== null && currentData.place[selectedRowIndex]) {
+                setImage(currentData.place[selectedRowIndex].image);
             } else {
                 setImage(null);
             }
@@ -429,6 +486,7 @@
         // Handle selecting a row and updating map image
         function selectPlace(index) {
             selectedRowIndex = index;
+            localStorage.setItem(`${SELECTED_PLACE_KEY}_${activeTitle}`, index.toString());
             const place = datasets[activeTitle].place[index];
             if (place) {
                 setImage(place.image);
@@ -439,16 +497,13 @@
         // Update image display on top
         function setImage(imgNumber) {
             const imgEl = document.getElementById('mapImage');
-            const pathText = document.getElementById('imagePathText');
             
             if (imgNumber !== null && imgNumber !== undefined && imgNumber !== '') {
                 const src = `map/${imgNumber}.jpg`;
                 imgEl.src = src;
-                pathText.innerText = src;
             } else {
                 // Fallback placeholder when no number specified
                 imgEl.src = `https://placehold.co/800x400/111827/4B5563?text=No+Map+Image+Assigned`;
-                pathText.innerText = 'No image';
             }
         }
 
